@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final int cartCount;
 
   const CustomBottomNavigation({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.cartCount = 0,
   });
 
   @override
@@ -62,22 +64,52 @@ class CustomBottomNavigation extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? theme.colorScheme.primary.withOpacity(0.15)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          item.icon,
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.onSurface.withOpacity(0.5),
-                          size: 24,
-                        ),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.primary.withOpacity(0.15)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              item.icon,
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface.withOpacity(0.5),
+                              size: 24,
+                            ),
+                          ),
+                          if (index == 3 && cartCount > 0)
+                            Positioned(
+                              right: -4,
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.tertiary,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  cartCount > 99 ? '99+' : cartCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       AnimatedContainer(

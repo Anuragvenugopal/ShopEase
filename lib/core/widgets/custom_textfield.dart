@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final IconData? prefixIcon;
   final Widget? suffixIcon;
   final bool enabled;
+  final bool readOnly;
   final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
   final bool showClearButton;
@@ -27,6 +28,7 @@ class CustomTextField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.enabled = true,
+    this.readOnly = false,
     this.onChanged,
     this.onFieldSubmitted,
     this.showClearButton = false,
@@ -76,6 +78,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textInputAction: widget.textInputAction,
       validator: widget.validator,
       enabled: widget.enabled,
+      readOnly: widget.readOnly,
       onChanged: (val) {
         if (widget.onChanged != null) widget.onChanged!(val);
         setState(() {

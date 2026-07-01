@@ -10,6 +10,7 @@ class CustomButton extends StatefulWidget {
   final Color? textColor;
   final double? width;
   final double height;
+  final double fontSize;
 
   const CustomButton({
     super.key,
@@ -22,6 +23,7 @@ class CustomButton extends StatefulWidget {
     this.textColor,
     this.width,
     this.height = 54,
+    this.fontSize = 16.0,
   });
 
   @override
@@ -85,6 +87,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
                           : (widget.backgroundColor ?? theme.colorScheme.primary),
                       width: 1.5,
                     ),
+                    padding: widget.width != null ? EdgeInsets.zero : null,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -99,6 +102,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
                     disabledBackgroundColor: theme.disabledColor.withOpacity(0.12),
                     disabledForegroundColor: theme.disabledColor.withOpacity(0.38),
                     shadowColor: Colors.transparent,
+                    padding: widget.width != null ? EdgeInsets.zero : null,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -132,7 +136,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
             widget.text,
             style: theme.textTheme.labelLarge?.copyWith(
               color: textColor,
-              fontSize: 16,
+              fontSize: widget.fontSize,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -144,7 +148,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
       widget.text,
       style: theme.textTheme.labelLarge?.copyWith(
         color: textColor,
-        fontSize: 16,
+        fontSize: widget.fontSize,
         fontWeight: FontWeight.bold,
       ),
     );

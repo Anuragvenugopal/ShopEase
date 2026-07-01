@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'custom_button.dart';
+import './custom_button.dart';
 
 class ErrorState extends StatelessWidget {
   final String errorMessage;

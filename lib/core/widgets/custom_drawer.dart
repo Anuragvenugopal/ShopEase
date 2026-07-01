@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../main.dart'; // to access themeNotifier
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../main.dart';
 import '../routes/app_routes.dart';
+import '../../presentation/blocs/auth/auth_bloc.dart';
+import '../../presentation/blocs/auth/auth_event.dart';
+import '../../presentation/blocs/auth/auth_state.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -19,30 +23,40 @@ class CustomDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Drawer Header
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.08),
-            ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: theme.colorScheme.primary,
-              backgroundImage: const NetworkImage(
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-              ),
-            ),
-            accountName: Text(
-              'Jessica Doe',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onBackground,
-              ),
-            ),
-            accountEmail: Text(
-              'jessica.doe@example.com',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onBackground.withOpacity(0.6),
-              ),
-            ),
+          // Drawer Header — real Firebase user data
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              final name   = state is Authenticated ? (state.user.displayName ?? 'User') : 'User';
+              final email  = state is Authenticated ? state.user.email : '';
+              final photo  = state is Authenticated ? state.user.photoUrl : null;
+
+              return UserAccountsDrawerHeader(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.08),
+                ),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: theme.colorScheme.primary,
+                  backgroundImage: photo != null && photo.isNotEmpty
+                      ? NetworkImage(photo)
+                      : const NetworkImage(
+                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+                        ),
+                ),
+                accountName: Text(
+                  name,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                accountEmail: Text(
+                  email,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              );
+            },
           ),
 
           // Drawer Body Scrollable Items
@@ -61,25 +75,40 @@ class CustomDrawer extends StatelessWidget {
                   context,
                   icon: Icons.grid_view_outlined,
                   title: 'Categories',
-                  route: AppRoutes.categories,
-                ),
-                _buildDrawerTile(
-                  context,
-                  icon: Icons.shopping_bag_outlined,
-                  title: 'My Cart',
-                  route: AppRoutes.cart,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.home,
+                      arguments: 1, // Categories tab
+                    );
+                  },
                 ),
                 _buildDrawerTile(
                   context,
                   icon: Icons.favorite_outline_rounded,
                   title: 'Wishlist',
-                  route: AppRoutes.wishlist,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.home,
+                      arguments: 2, // Wishlist tab
+                    );
+                  },
                 ),
                 _buildDrawerTile(
                   context,
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Order History',
-                  route: AppRoutes.orderHistory,
+                  icon: Icons.shopping_bag_outlined,
+                  title: 'My Cart',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.home,
+                      arguments: 3, // Cart tab
+                    );
+                  },
                 ),
                 _buildDrawerTile(
                   context,
@@ -93,6 +122,7 @@ class CustomDrawer extends StatelessWidget {
                   title: 'Settings',
                   route: AppRoutes.settingsRoute,
                 ),
+
                 const Divider(height: 32, indent: 8, endIndent: 8),
 
                 // Theme Mode Switcher Inside Drawer
@@ -149,12 +179,8 @@ class CustomDrawer extends StatelessWidget {
                   // Log Out Button
                   ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.pop(context); // Close Drawer
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        AppRoutes.login,
-                        (route) => false,
-                      );
+                      Navigator.pop(context);
+                      context.read<AuthBloc>().add(SignOutRequested());
                     },
                     icon: const Icon(Icons.logout_rounded, size: 20),
                     label: const Text('Log Out'),
@@ -181,12 +207,13 @@ class CustomDrawer extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String route,
+    String? route,
     bool isReplacement = false,
+    VoidCallback? onTap,
   }) {
     final theme = Theme.of(context);
     final currentRoute = ModalRoute.of(context)?.settings.name;
-    final isSelected = currentRoute == route;
+    final isSelected = route != null && currentRoute == route;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -197,25 +224,31 @@ class CustomDrawer extends StatelessWidget {
       child: ListTile(
         leading: Icon(
           icon,
-          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onBackground.withOpacity(0.6),
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface.withOpacity(0.6),
         ),
         title: Text(
           title,
           style: theme.textTheme.bodyLarge?.copyWith(
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onBackground,
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurface,
           ),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onTap: () {
-          Navigator.pop(context); // Close Drawer
-          if (isSelected) return;
-          if (isReplacement) {
-            Navigator.pushReplacementNamed(context, route);
-          } else {
-            Navigator.pushNamed(context, route);
-          }
-        },
+        onTap: onTap ??
+            () {
+              Navigator.pop(context);
+              if (isSelected) return;
+              if (route == null) return;
+              if (isReplacement) {
+                Navigator.pushReplacementNamed(context, route);
+              } else {
+                Navigator.pushNamed(context, route);
+              }
+            },
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'loading_skeleton.dart';
+import './loading_skeleton.dart';
 
 class ProductCard extends StatefulWidget {
   final String id;
@@ -12,7 +12,11 @@ class ProductCard extends StatefulWidget {
   final int reviewsCount;
   final VoidCallback onTap;
   final VoidCallback? onAddToCart;
+  final VoidCallback? onRemoveFromCart;
+  final ValueChanged<int>? onUpdateQuantity;
+  final ValueChanged<bool>? onWishlistToggle;
   final bool initialIsWishlisted;
+  final int cartQuantity;
 
   const ProductCard({
     super.key,
@@ -25,14 +29,19 @@ class ProductCard extends StatefulWidget {
     required this.reviewsCount,
     required this.onTap,
     this.onAddToCart,
+    this.onRemoveFromCart,
+    this.onUpdateQuantity,
+    this.onWishlistToggle,
     this.initialIsWishlisted = false,
+    this.cartQuantity = 0,
   });
 
   @override
   State<ProductCard> createState() => _ProductCardState();
 }
 
-class _ProductCardState extends State<ProductCard> with SingleTickerProviderStateMixin {
+class _ProductCardState extends State<ProductCard>
+    with SingleTickerProviderStateMixin {
   late bool _isWishlisted;
   late AnimationController _wishlistAnimationController;
   late Animation<double> _scaleAnimation;
@@ -46,7 +55,10 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
       duration: const Duration(milliseconds: 150),
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _wishlistAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+        parent: _wishlistAnimationController,
+        curve: Curves.easeInOut,
+      ),
     );
   }
 
@@ -60,6 +72,7 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
     setState(() {
       _isWishlisted = !_isWishlisted;
     });
+    widget.onWishlistToggle?.call(_isWishlisted);
     _wishlistAnimationController.forward().then((_) {
       _wishlistAnimationController.reverse();
     });
@@ -71,7 +84,9 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
     final isDark = theme.brightness == Brightness.dark;
 
     final discountPercent = widget.originalPrice != null
-        ? (((widget.originalPrice! - widget.price) / widget.originalPrice!) * 100).round()
+        ? (((widget.originalPrice! - widget.price) / widget.originalPrice!) *
+                  100)
+              .round()
         : 0;
 
     return GestureDetector(
@@ -81,7 +96,9 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
           color: isDark ? const Color(0xFF161F30) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+            color: isDark
+                ? Colors.white.withOpacity(0.06)
+                : Colors.black.withOpacity(0.04),
             width: 1,
           ),
           boxShadow: isDark
@@ -105,28 +122,33 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                   tag: 'product_image_${widget.id}',
                   child: CachedNetworkImage(
                     imageUrl: widget.imageUrl,
-                    height: 125,
+                    height: 105,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => const LoadingSkeleton(
                       width: double.infinity,
-                      height: 125,
+                      height: 105,
                     ),
                     errorWidget: (context, url, error) => Container(
-                      height: 125,
-                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
+                      height: 105,
+                      color: isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.04),
                       child: const Icon(Icons.broken_image_outlined, size: 40),
                     ),
                   ),
                 ),
-                
+
                 // Sale Tag/Discount Badge
                 if (discountPercent > 0)
                   Positioned(
                     top: 10,
                     left: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(8),
@@ -141,7 +163,7 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                       ),
                     ),
                   ),
-                
+
                 // Wishlist Icon (Animated Scale)
                 Positioned(
                   top: 6,
@@ -149,7 +171,9 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      color: isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.8),
+                      color: isDark
+                          ? Colors.black.withOpacity(0.4)
+                          : Colors.white.withOpacity(0.8),
                       child: GestureDetector(
                         onTap: _toggleWishlist,
                         child: ScaleTransition(
@@ -157,8 +181,14 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Icon(
-                              _isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                              color: _isWishlisted ? theme.colorScheme.tertiary : theme.colorScheme.onSurface.withOpacity(0.6),
+                              _isWishlisted
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              color: _isWishlisted
+                                  ? theme.colorScheme.tertiary
+                                  : theme.colorScheme.onSurface.withOpacity(
+                                      0.6,
+                                    ),
                               size: 20,
                             ),
                           ),
@@ -169,112 +199,200 @@ class _ProductCardState extends State<ProductCard> with SingleTickerProviderStat
                 ),
               ],
             ),
-            
+
             // Details
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Rating & Reviews Count
-                        Row(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Rating & Reviews Count
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Colors.amber,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        widget.rating.toString(),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          color: theme.colorScheme.onBackground,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '(${widget.reviewsCount})',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Title
+                  Text(
+                    widget.title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Pricing & Cart Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.rating.toString(),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                color: theme.colorScheme.onBackground,
+                            if (widget.originalPrice != null)
+                              Text(
+                                '₹${widget.originalPrice!.toStringAsFixed(0)}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontSize: 11,
+                                  decoration: TextDecoration.lineThrough,
+                                  color: theme.textTheme.bodyMedium?.color
+                                      ?.withOpacity(0.5),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
                             Text(
-                              '(${widget.reviewsCount})',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 11,
+                              '₹${widget.price.toStringAsFixed(0)}',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: theme.colorScheme.primary,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        
-                        // Title
-                        Text(
-                          widget.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
+                      ),
+
+                      // Add to Cart Button or Quantity Counter
+                      if (widget.cartQuantity > 0)
+                        Container(
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(
+                              0.08,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withOpacity(
+                                0.2,
+                              ),
+                              width: 1,
+                            ),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                    
-                    // Pricing & Cart Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (widget.originalPrice != null)
-                                Text(
-                                  '\$${widget.originalPrice!.toStringAsFixed(2)}',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontSize: 12,
-                                    decoration: TextDecoration.lineThrough,
-                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                  ),
+                                  onTap: () {
+                                    if (widget.cartQuantity == 1) {
+                                      widget.onRemoveFromCart?.call();
+                                    } else {
+                                      widget.onUpdateQuantity?.call(
+                                        widget.cartQuantity - 1,
+                                      );
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 6.0,
+                                    ),
+                                    child: Icon(
+                                      Icons.remove_rounded,
+                                      color: theme.colorScheme.primary,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
-                              Text(
-                                '\$${widget.price.toStringAsFixed(2)}',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: theme.colorScheme.primary,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
+                                child: Text(
+                                  widget.cartQuantity.toString(),
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(10),
+                                    bottomRight: Radius.circular(10),
+                                  ),
+                                  onTap: () {
+                                    widget.onUpdateQuantity?.call(
+                                      widget.cartQuantity + 1,
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 6.0,
+                                    ),
+                                    child: Icon(
+                                      Icons.add_rounded,
+                                      color: theme.colorScheme.primary,
+                                      size: 16,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        
-                        // Add to Cart Button
-                        if (widget.onAddToCart != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              color: theme.colorScheme.primary,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: widget.onAddToCart,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Icon(
-                                      Icons.add_shopping_cart_rounded,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
+                        )
+                      else if (widget.onAddToCart != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            color: theme.colorScheme.primary,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: widget.onAddToCart,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    Icons.add_shopping_cart_rounded,
+                                    color: Colors.white,
+                                    size: 18,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],

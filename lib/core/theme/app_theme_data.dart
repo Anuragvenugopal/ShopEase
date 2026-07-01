@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_theme.dart';
+import './app_theme.dart';
 
 class AppThemeData {
   AppThemeData._();
@@ -126,6 +126,20 @@ class AppThemeData {
           ),
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppTheme.surfaceLight,
+        behavior: SnackBarBehavior.floating,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.outlineLight),
+        ),
+        contentTextStyle: GoogleFonts.plusJakartaSans(
+          color: AppTheme.primaryLight,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -248,6 +262,20 @@ class AppThemeData {
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppTheme.surfaceDark,
+        behavior: SnackBarBehavior.floating,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppTheme.outlineDark),
+        ),
+        contentTextStyle: GoogleFonts.plusJakartaSans(
+          color: AppTheme.primaryDark,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
