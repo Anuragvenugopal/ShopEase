@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_theme_data.dart';
 
 // Global notifier for dynamic theme switching (Light / Dark)
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
@@ -21,8 +22,8 @@ class ShopEaseApp extends StatelessWidget {
         return MaterialApp(
           title: 'ShopEase',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: AppThemeData.lightTheme,
+          darkTheme: AppThemeData.darkTheme,
           themeMode: currentThemeMode,
           initialRoute: AppRoutes.splash,
           onGenerateRoute: AppRoutes.onGenerateRoute,

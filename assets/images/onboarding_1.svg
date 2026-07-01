@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EEF2FF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+    <linearGradient id="gradViolet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5F5DEC" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+  </defs>
+  <!-- Background Board -->
+  <rect width="400" height="400" rx="32" fill="url(#grad1)" />
+  <!-- UI Mockup Screen -->
+  <rect x="80" y="60" width="240" height="280" rx="20" fill="#FFFFFF" stroke="#D1D5DB" stroke-width="2" />
+  <!-- UI Screen Header -->
+  <rect x="100" y="80" width="80" height="16" rx="4" fill="#E5E7EB" />
+  <circle cx="290" cy="88" r="10" fill="#EEF2FF" />
+  <!-- Mockup Search Bar -->
+  <rect x="100" y="115" width="200" height="30" rx="8" fill="#F3F4F6" />
+  <circle cx="120" cy="130" r="5" fill="none" stroke="#9CA3AF" stroke-width="2" />
+  <line x1="124" y1="134" x2="130" y2="140" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" />
+  <!-- Product Grid Bento -->
+  <rect x="100" y="165" width="94" height="110" rx="12" fill="url(#gradViolet)" />
+  <rect x="206" y="165" width="94" height="50" rx="12" fill="#10B981" />
+  <rect x="206" y="225" width="94" height="50" rx="12" fill="#F43F5E" />
+  <!-- Details lines -->
+  <rect x="100" y="295" width="120" height="10" rx="2" fill="#E5E7EB" />
+  <rect x="100" y="310" width="70" height="10" rx="2" fill="#E5E7EB" />
+  <circle cx="290" cy="305" r="15" fill="#5F5DEC" />
+</svg>

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -110,10 +112,10 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                         color: theme.colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(32),
                       ),
-                      child: Icon(
-                        Icons.shopping_bag_rounded,
-                        size: 72,
-                        color: theme.colorScheme.primary,
+                      child: SvgPicture.asset(
+                        AppAssets.logo,
+                        width: 72,
+                        height: 72,
                       ),
                     ),
                     const SizedBox(height: 24),

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="gradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5F5DEC" />
+      <stop offset="100%" stop-color="#818CF8" />
+    </linearGradient>
+    <linearGradient id="gradAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+  <!-- Background Shield/Bag -->
+  <path d="M25,35 L95,35 L88,100 C88,106 82,110 76,110 L44,110 C38,110 32,106 32,100 Z" fill="url(#gradLogo)" />
+  <!-- Handle -->
+  <path d="M42,35 C42,20 50,10 60,10 C70,10 78,20 78,35" fill="none" stroke="url(#gradAccent)" stroke-width="6" stroke-linecap="round" />
+  <!-- Inner Star Ribbon -->
+  <path d="M60,50 L68,66 L86,69 L73,81 L76,99 L60,90 L44,99 L47,81 L34,69 L52,66 Z" fill="#FFFFFF" opacity="0.95" />
+</svg>

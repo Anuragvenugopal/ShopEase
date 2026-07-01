@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_textfield.dart';
@@ -65,10 +67,10 @@ class _LoginPageState extends State<LoginPage> {
                         color: theme.colorScheme.primary.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: Icon(
-                        Icons.shopping_bag_rounded,
-                        size: 48,
-                        color: theme.colorScheme.primary,
+                      child: SvgPicture.asset(
+                        AppAssets.logo,
+                        width: 48,
+                        height: 48,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -184,14 +186,18 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   _buildSocialButton(
                     onTap: () {},
-                    icon: Icons.g_mobiledata_rounded,
-                    color: Colors.red,
+                    assetPath: AppAssets.googleIcon,
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 16),
                   _buildSocialButton(
                     onTap: () {},
-                    icon: Icons.apple_rounded,
-                    color: isDark ? Colors.white : Colors.black,
+                    assetPath: AppAssets.facebookIcon,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildSocialButton(
+                    onTap: () {},
+                    assetPath: AppAssets.appleIcon,
+                    iconColor: isDark ? Colors.white : Colors.black,
                   ),
                 ],
               ),
@@ -240,8 +246,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildSocialButton({
     required VoidCallback onTap,
-    required IconData icon,
-    required Color color,
+    required String assetPath,
+    Color? iconColor,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -250,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -258,7 +264,12 @@ class _LoginPageState extends State<LoginPage> {
           ),
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
         ),
-        child: Icon(icon, size: 32, color: color),
+        child: SvgPicture.asset(
+          assetPath,
+          width: 26,
+          height: 26,
+          colorFilter: iconColor != null ? ColorFilter.mode(iconColor, BlendMode.srcIn) : null,
+        ),
       ),
     );
   }

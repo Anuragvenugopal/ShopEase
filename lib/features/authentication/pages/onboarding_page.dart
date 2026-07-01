@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/loading_skeleton.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -19,17 +19,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
     OnboardingItem(
       title: 'Discover Latest Trends',
       description: 'Explore thousands of premium products across multiple categories. Handpicked items just for your style.',
-      imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80',
+      imageUrl: AppAssets.onboardingTrends,
     ),
     OnboardingItem(
       title: 'Secure & Seamless Payment',
       description: 'Shop with absolute peace of mind. We support safe payment cards, digital wallets, and cash on delivery.',
-      imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80',
+      imageUrl: AppAssets.onboardingPayments,
     ),
     OnboardingItem(
       title: 'Fast Delivery to Your Door',
       description: 'Track your packages in real-time. Extremely secure packaging and lightning-fast logistics networks.',
-      imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+      imageUrl: AppAssets.onboardingDelivery,
     ),
   ];
 
@@ -113,18 +113,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                                         ),
                                       ],
                               ),
-                              child: CachedNetworkImage(
-                                imageUrl: slide.imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const LoadingSkeleton(
-                                  width: double.infinity,
-                                  height: 200,
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.04),
-                                  alignment: Alignment.center,
-                                  child: const Icon(Icons.broken_image_outlined, size: 48),
-                                ),
+                              child: SvgPicture.asset(
+                                slide.imageUrl,
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),
