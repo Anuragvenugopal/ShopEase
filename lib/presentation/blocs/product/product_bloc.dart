@@ -10,7 +10,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
   ProductBloc(this._productRepository) : super(ProductInitial()) {
     on<LoadProducts>(_onLoadProducts);
+    on<LoadMoreProducts>(_onLoadMoreProducts);
     on<LoadProductsByCategory>(_onLoadProductsByCategory);
+    on<LoadMoreProductsByCategory>(_onLoadMoreProductsByCategory);
     on<LoadProductById>(_onLoadProductById);
     on<SearchProducts>(_onSearchProducts);
     on<AddProduct>(_onAddProduct);
@@ -22,10 +24,34 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       LoadProducts event, Emitter<ProductState> emit) async {
     emit(ProductLoading());
     try {
-      final products = await _productRepository.getProducts();
-      emit(ProductsLoaded(products));
+      final paginated = await _productRepository.getProducts(limit: 10);
+      emit(ProductsLoaded(
+        paginated.products,
+        hasReachedMax: paginated.hasReachedMax,
+        lastDoc: paginated.lastDoc,
+      ));
     } catch (e) {
       emit(ProductError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMoreProducts(
+      LoadMoreProducts event, Emitter<ProductState> emit) async {
+    final currentState = state;
+    if (currentState is ProductsLoaded && !currentState.hasReachedMax) {
+      try {
+        final paginated = await _productRepository.getProducts(
+          limit: 10,
+          lastDocument: currentState.lastDoc,
+        );
+        emit(ProductsLoaded(
+          currentState.products + paginated.products,
+          hasReachedMax: paginated.hasReachedMax,
+          lastDoc: paginated.lastDoc,
+        ));
+      } catch (e) {
+        emit(ProductError(e.toString()));
+      }
     }
   }
 
@@ -33,11 +59,38 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       LoadProductsByCategory event, Emitter<ProductState> emit) async {
     emit(ProductLoading());
     try {
-      final products =
-          await _productRepository.getProductsByCategory(event.category);
-      emit(ProductsLoaded(products));
+      final paginated = await _productRepository.getProductsByCategory(
+        category: event.category,
+        limit: 10,
+      );
+      emit(ProductsLoaded(
+        paginated.products,
+        hasReachedMax: paginated.hasReachedMax,
+        lastDoc: paginated.lastDoc,
+      ));
     } catch (e) {
       emit(ProductError(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMoreProductsByCategory(
+      LoadMoreProductsByCategory event, Emitter<ProductState> emit) async {
+    final currentState = state;
+    if (currentState is ProductsLoaded && !currentState.hasReachedMax) {
+      try {
+        final paginated = await _productRepository.getProductsByCategory(
+          category: event.category,
+          limit: 10,
+          lastDocument: currentState.lastDoc,
+        );
+        emit(ProductsLoaded(
+          currentState.products + paginated.products,
+          hasReachedMax: paginated.hasReachedMax,
+          lastDoc: paginated.lastDoc,
+        ));
+      } catch (e) {
+        emit(ProductError(e.toString()));
+      }
     }
   }
 
@@ -55,13 +108,13 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   Future<void> _onSearchProducts(
       SearchProducts event, Emitter<ProductState> emit) async {
     if (event.query.trim().isEmpty) {
-      emit(ProductsLoaded([]));
+      emit(const ProductsLoaded([], hasReachedMax: true));
       return;
     }
     emit(ProductLoading());
     try {
       final products = await _productRepository.searchProducts(event.query);
-      emit(ProductsLoaded(products));
+      emit(ProductsLoaded(products, hasReachedMax: true));
     } catch (e) {
       emit(ProductError(e.toString()));
     }
@@ -72,8 +125,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(ProductLoading());
     try {
       await _productRepository.addProduct(event.product);
-      final products = await _productRepository.getProducts();
-      emit(ProductsLoaded(products));
+      final paginated = await _productRepository.getProducts();
+      emit(ProductsLoaded(
+        paginated.products,
+        hasReachedMax: paginated.hasReachedMax,
+        lastDoc: paginated.lastDoc,
+      ));
     } catch (e) {
       emit(ProductError(e.toString()));
     }
@@ -84,8 +141,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(ProductLoading());
     try {
       await _productRepository.updateProduct(event.product);
-      final products = await _productRepository.getProducts();
-      emit(ProductsLoaded(products));
+      final paginated = await _productRepository.getProducts();
+      emit(ProductsLoaded(
+        paginated.products,
+        hasReachedMax: paginated.hasReachedMax,
+        lastDoc: paginated.lastDoc,
+      ));
     } catch (e) {
       emit(ProductError(e.toString()));
     }
@@ -96,8 +157,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     emit(ProductLoading());
     try {
       await _productRepository.deleteProduct(event.id);
-      final products = await _productRepository.getProducts();
-      emit(ProductsLoaded(products));
+      final paginated = await _productRepository.getProducts();
+      emit(ProductsLoaded(
+        paginated.products,
+        hasReachedMax: paginated.hasReachedMax,
+        lastDoc: paginated.lastDoc,
+      ));
     } catch (e) {
       emit(ProductError(e.toString()));
     }

@@ -11,15 +11,31 @@ class ProductRepositoryImpl implements ProductRepository {
   ProductRepositoryImpl(this._dataSource);
 
   @override
-  Future<List<ProductEntity>> getProducts() async {
-    final models = await _dataSource.getProducts();
-    return models.map((m) => m.toEntity()).toList();
+  Future<PaginatedProducts> getProducts({int limit = 10, dynamic lastDocument}) async {
+    final response = await _dataSource.getProducts(limit: limit, lastDocument: lastDocument);
+    return PaginatedProducts(
+      products: response.items.map((m) => m.toEntity()).toList(),
+      lastDoc: response.lastDoc,
+      hasReachedMax: response.hasReachedMax,
+    );
   }
 
   @override
-  Future<List<ProductEntity>> getProductsByCategory(String category) async {
-    final models = await _dataSource.getProductsByCategory(category);
-    return models.map((m) => m.toEntity()).toList();
+  Future<PaginatedProducts> getProductsByCategory({
+    required String category,
+    int limit = 10,
+    dynamic lastDocument,
+  }) async {
+    final response = await _dataSource.getProductsByCategory(
+      category: category,
+      limit: limit,
+      lastDocument: lastDocument,
+    );
+    return PaginatedProducts(
+      products: response.items.map((m) => m.toEntity()).toList(),
+      lastDoc: response.lastDoc,
+      hasReachedMax: response.hasReachedMax,
+    );
   }
 
   @override

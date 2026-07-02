@@ -10,6 +10,7 @@ import '../../domain/entities/cart_item_entity.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
 import '../../presentation/blocs/auth/auth_state.dart';
 import '../../presentation/blocs/product/product_bloc.dart';
+import '../../presentation/blocs/product/product_event.dart';
 import '../../presentation/blocs/product/product_state.dart';
 import '../../presentation/blocs/wishlist/wishlist_bloc.dart';
 import '../../presentation/blocs/wishlist/wishlist_event.dart';
@@ -28,7 +29,38 @@ class CategoryProductsScreen extends StatefulWidget {
 }
 
 class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
+  final ScrollController _scrollController = ScrollController();
   String _sortBy = 'Popular'; // Popular, LowToHigh, HighToLow
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    // Trigger initial category load on initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductBloc>().add(LoadProductsByCategory(widget.categoryName));
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _isLoadingMore = false;
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
+      final state = context.read<ProductBloc>().state;
+      if (state is ProductsLoaded && !state.hasReachedMax && !_isLoadingMore) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+        context.read<ProductBloc>().add(LoadMoreProductsByCategory(widget.categoryName));
+      }
+    }
+  }
 
   void _changeSort(String sorting) {
     setState(() {
@@ -45,6 +77,9 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     final userId = authState is Authenticated ? authState.user.id : '';
 
     final productState = context.watch<ProductBloc>().state;
+    if (productState is ProductsLoaded) {
+      _isLoadingMore = false;
+    }
     final wishlistState = context.watch<WishlistBloc>().state;
 
     final List<ProductEntity> allProducts = productState is ProductsLoaded
@@ -70,6 +105,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     } else {
       filteredProducts.sort((a, b) => b.rating.compareTo(a.rating));
     }
+
+    final hasReachedMax = productState is ProductsLoaded ? productState.hasReachedMax : true;
 
     return Scaffold(
       appBar: CustomAppBar(title: widget.categoryName, showBackButton: true),
@@ -131,114 +168,136 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
 
           // Products Grid
           Expanded(
-            child: filteredProducts.isEmpty
-                ? const EmptyState(
-                    icon: Icons.search_off_rounded,
-                    title: 'No Products Found',
-                    description:
-                        'We couldn\'t find any products in this category at the moment. Check back later!',
-                  )
-                : BlocBuilder<CartBloc, CartState>(
-                    builder: (context, cartState) {
-                      final cartQuantityMap = <String, int>{};
-                      if (cartState is CartLoaded) {
-                        for (final item in cartState.items) {
-                          cartQuantityMap[item.productId] = item.quantity;
-                        }
-                      }
-                      return GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredProducts.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.65,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
-                          final isWishlisted = wishlistedIds.contains(
-                            product.id,
-                          );
-                          final cartQty = cartQuantityMap[product.id] ?? 0;
-
-                          return ProductCard(
-                            id: product.id,
-                            title: product.title,
-                            imageUrl: product.imageUrl,
-                            price: product.price,
-                            originalPrice: product.originalPrice,
-                            offerPercentage: product.offerPercentage,
-                            rating: product.rating,
-                            reviewsCount: product.reviewsCount,
-                            initialIsWishlisted: isWishlisted,
-                            cartQuantity: cartQty,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.productDetails,
-                                arguments: product.id,
-                              );
+            child: productState is ProductLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredProducts.isEmpty
+                    ? const EmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: 'No Products Found',
+                        description:
+                            'We couldn\'t find any products in this category at the moment. Check back later!',
+                      )
+                    : BlocBuilder<CartBloc, CartState>(
+                        builder: (context, cartState) {
+                          final cartQuantityMap = <String, int>{};
+                          if (cartState is CartLoaded) {
+                            for (final item in cartState.items) {
+                              cartQuantityMap[item.productId] = item.quantity;
+                            }
+                          }
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<ProductBloc>().add(LoadProductsByCategory(widget.categoryName));
                             },
-                            onWishlistToggle: (wasWishlisted) {
-                              if (userId.isNotEmpty) {
-                                context.read<WishlistBloc>().add(
-                                  ToggleWishlist(
-                                    userId,
-                                    product.id,
-                                    wasWishlisted,
+                            child: ListView(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: [
+                                GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.all(16),
+                                  itemCount: filteredProducts.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 0.65,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
                                   ),
-                                );
-                              }
-                            },
-                            onAddToCart: () {
-                              if (userId.isNotEmpty) {
-                                context.read<CartBloc>().add(
-                                  AddToCart(
-                                    userId,
-                                    CartItemEntity(
-                                      productId: product.id,
+                                  itemBuilder: (context, index) {
+                                    final product = filteredProducts[index];
+                                    final isWishlisted = wishlistedIds.contains(
+                                      product.id,
+                                    );
+                                    final cartQty = cartQuantityMap[product.id] ?? 0;
+
+                                    return ProductCard(
+                                      id: product.id,
                                       title: product.title,
                                       imageUrl: product.imageUrl,
                                       price: product.price,
-                                      quantity: 1,
+                                      originalPrice: product.originalPrice,
+                                      offerPercentage: product.offerPercentage,
+                                      rating: product.rating,
+                                      reviewsCount: product.reviewsCount,
+                                      initialIsWishlisted: isWishlisted,
+                                      cartQuantity: cartQty,
+                                      onTap: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          AppRoutes.productDetails,
+                                          arguments: product.id,
+                                        );
+                                      },
+                                      onWishlistToggle: (wasWishlisted) {
+                                        if (userId.isNotEmpty) {
+                                          context.read<WishlistBloc>().add(
+                                            ToggleWishlist(
+                                              userId,
+                                              product.id,
+                                              wasWishlisted,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      onAddToCart: () {
+                                        if (userId.isNotEmpty) {
+                                          context.read<CartBloc>().add(
+                                            AddToCart(
+                                              userId,
+                                              CartItemEntity(
+                                                productId: product.id,
+                                                title: product.title,
+                                                imageUrl: product.imageUrl,
+                                                price: product.price,
+                                                quantity: 1,
+                                              ),
+                                            ),
+                                          );
+                                          CustomToast.show(
+                                            context,
+                                            '${product.title} added to Cart!',
+                                          );
+                                        }
+                                      },
+                                      onRemoveFromCart: () {
+                                        if (userId.isNotEmpty) {
+                                          context.read<CartBloc>().add(
+                                            RemoveFromCart(userId, product.id),
+                                          );
+                                          CustomToast.show(
+                                            context,
+                                            '${product.title} removed from Cart',
+                                          );
+                                        }
+                                      },
+                                      onUpdateQuantity: (newQty) {
+                                        if (userId.isNotEmpty) {
+                                          context.read<CartBloc>().add(
+                                            UpdateCartQuantity(
+                                              userId,
+                                              product.id,
+                                              newQty,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                ),
+                                if (!hasReachedMax)
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
                                     ),
                                   ),
-                                );
-                                CustomToast.show(
-                                  context,
-                                  '${product.title} added to Cart!',
-                                );
-                              }
-                            },
-                            onRemoveFromCart: () {
-                              if (userId.isNotEmpty) {
-                                context.read<CartBloc>().add(
-                                  RemoveFromCart(userId, product.id),
-                                );
-                                CustomToast.show(
-                                  context,
-                                  '${product.title} removed from Cart',
-                                );
-                              }
-                            },
-                            onUpdateQuantity: (newQty) {
-                              if (userId.isNotEmpty) {
-                                context.read<CartBloc>().add(
-                                  UpdateCartQuantity(
-                                    userId,
-                                    product.id,
-                                    newQty,
-                                  ),
-                                );
-                              }
-                            },
+                              ],
+                            ),
                           );
                         },
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
       ),

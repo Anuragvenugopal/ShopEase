@@ -72,3 +72,18 @@ class ProductEntity extends Equatable {
     isActive,
   ];
 }
+
+class PaginatedProducts extends Equatable {
+  final List<ProductEntity> products;
+  final dynamic lastDoc;
+  final bool hasReachedMax;
+
+  const PaginatedProducts({
+    required this.products,
+    this.lastDoc,
+    required this.hasReachedMax,
+  });
+
+  @override
+  List<Object?> get props => [products, lastDoc, hasReachedMax];
+}

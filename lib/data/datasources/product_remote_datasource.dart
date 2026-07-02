@@ -4,13 +4,28 @@ import 'package:injectable/injectable.dart';
 import '../../core/constants/dummy_data.dart';
 import '../models/product_model.dart';
 
+class PaginatedModelResponse<T> {
+  final List<T> items;
+  final DocumentSnapshot? lastDoc;
+  final bool hasReachedMax;
+
+  PaginatedModelResponse({
+    required this.items,
+    this.lastDoc,
+    required this.hasReachedMax,
+  });
+}
+
 @injectable
 class ProductRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   ProductRemoteDataSource(this._firestore);
 
-  Future<List<ProductModel>> getProducts() async {
+  Future<PaginatedModelResponse<ProductModel>> getProducts({
+    int limit = 10,
+    DocumentSnapshot? lastDocument,
+  }) async {
     // Seed categories if not yet created
     final catSnapshot = await _firestore.collection('categories').get();
     if (catSnapshot.docs.isEmpty) {
@@ -78,25 +93,56 @@ class ProductRemoteDataSource {
       }
     }
 
-    // Re-fetch if we added new products
-    if (seeded) {
-      snapshot = await _firestore.collection('products').get();
+    Query query = _firestore.collection('products')
+        .orderBy(FieldPath.documentId)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
     }
 
-    return snapshot.docs
-        .map((doc) => ProductModel.fromJson({...doc.data(), 'id': doc.id}))
+    final querySnapshot = await query.get();
+    final items = querySnapshot.docs
+        .map((doc) => ProductModel.fromJson({...doc.data() as Map<String, dynamic>, 'id': doc.id}))
         .toList();
+
+    final hasReachedMax = items.length < limit;
+    final lastDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+
+    return PaginatedModelResponse(
+      items: items,
+      lastDoc: lastDoc,
+      hasReachedMax: hasReachedMax,
+    );
   }
 
-
-  Future<List<ProductModel>> getProductsByCategory(String category) async {
-    final snapshot = await _firestore
-        .collection('products')
+  Future<PaginatedModelResponse<ProductModel>> getProductsByCategory({
+    required String category,
+    int limit = 10,
+    DocumentSnapshot? lastDocument,
+  }) async {
+    Query query = _firestore.collection('products')
         .where('category', isEqualTo: category)
-        .get();
-    return snapshot.docs
-        .map((doc) => ProductModel.fromJson({...doc.data(), 'id': doc.id}))
+        .orderBy(FieldPath.documentId)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    final querySnapshot = await query.get();
+    final items = querySnapshot.docs
+        .map((doc) => ProductModel.fromJson({...doc.data() as Map<String, dynamic>, 'id': doc.id}))
         .toList();
+
+    final hasReachedMax = items.length < limit;
+    final lastDoc = querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+
+    return PaginatedModelResponse(
+      items: items,
+      lastDoc: lastDoc,
+      hasReachedMax: hasReachedMax,
+    );
   }
 
   Future<ProductModel> getProductById(String id) async {

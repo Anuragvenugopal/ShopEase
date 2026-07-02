@@ -13,9 +13,17 @@ class ProductLoading extends ProductState {}
 
 class ProductsLoaded extends ProductState {
   final List<ProductEntity> products;
-  const ProductsLoaded(this.products);
+  final bool hasReachedMax;
+  final dynamic lastDoc;
+
+  const ProductsLoaded(
+    this.products, {
+    this.hasReachedMax = false,
+    this.lastDoc,
+  });
+
   @override
-  List<Object?> get props => [products];
+  List<Object?> get props => [products, hasReachedMax, lastDoc];
 }
 
 class ProductDetailLoaded extends ProductState {

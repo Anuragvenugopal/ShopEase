@@ -11,12 +11,46 @@ import '../../presentation/blocs/product/product_bloc.dart';
 import '../../presentation/blocs/product/product_event.dart';
 import '../../presentation/blocs/product/product_state.dart';
 
-class AdminProductListScreen extends StatelessWidget {
+class AdminProductListScreen extends StatefulWidget {
+  const AdminProductListScreen({super.key});
+
+  @override
+  State<AdminProductListScreen> createState() => _AdminProductListScreenState();
+}
+
+class _AdminProductListScreenState extends State<AdminProductListScreen> {
+  final ScrollController _scrollController = ScrollController();
   final ValueNotifier<String> _searchQuery = ValueNotifier('');
   final ValueNotifier<String> _selectedCategory = ValueNotifier('All');
-  final ValueNotifier<bool> _isInit = ValueNotifier(true);
+  bool _isInit = true;
 
-  AdminProductListScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchQuery.dispose();
+    _selectedCategory.dispose();
+    super.dispose();
+  }
+
+  bool _isLoadingMore = false;
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
+      final state = context.read<ProductBloc>().state;
+      if (state is ProductsLoaded && !state.hasReachedMax && !_isLoadingMore) {
+        setState(() {
+          _isLoadingMore = true;
+        });
+        context.read<ProductBloc>().add(LoadMoreProducts());
+      }
+    }
+  }
 
   void _deleteProduct(BuildContext context, ProductEntity product) {
     ConfirmationDialog.show(
@@ -39,14 +73,15 @@ class AdminProductListScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (_isInit.value) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
       final String? initialCategory =
           ModalRoute.of(context)?.settings.arguments as String?;
       if (initialCategory != null) {
         _selectedCategory.value = initialCategory;
       }
-      _isInit.value = false;
+      _isInit = false;
 
       // Dispatch LoadProducts if initial or not loaded
       final productState = context.read<ProductBloc>().state;
@@ -54,7 +89,10 @@ class AdminProductListScreen extends StatelessWidget {
         context.read<ProductBloc>().add(LoadProducts());
       }
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -108,356 +146,344 @@ class AdminProductListScreen extends StatelessWidget {
 
                 return ValueListenableBuilder<String>(
                   valueListenable: _selectedCategory,
-                  builder: (context, currentCat, _) {
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Row(
-                        children: categories.map((cat) {
-                          final isSelected = currentCat == cat;
+                  builder: (context, activeCat, _) {
+                    return SizedBox(
+                      height: 48,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        itemCount: categories.length,
+                        itemBuilder: (context, idx) {
+                          final cat = categories[idx];
+                          final isSelected = cat == activeCat;
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: ChoiceChip(
-                              label: Text(cat),
+                              label: Text(
+                                cat,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : (isDark ? Colors.white70 : Colors.black87),
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
                               selected: isSelected,
+                              selectedColor: theme.colorScheme.primary,
+                              backgroundColor: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : Colors.grey.withOpacity(0.08),
+                              checkmarkColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : (isDark
+                                          ? Colors.white.withOpacity(0.08)
+                                          : Colors.black.withOpacity(0.04)),
+                                ),
+                              ),
                               onSelected: (selected) {
                                 if (selected) {
                                   _selectedCategory.value = cat;
                                 }
                               },
-                              backgroundColor: isDark
-                                  ? const Color(0xFF161F30)
-                                  : Colors.white,
-                              selectedColor: theme.colorScheme.primary,
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark
-                                          ? Colors.white70
-                                          : Colors.black87),
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
                             ),
                           );
-                        }).toList(),
+                        },
                       ),
                     );
                   },
                 );
               },
             ),
+            const SizedBox(height: 8),
 
-            // Products Table List
+            // Products grid list with BLoC state mapping
             Expanded(
-              child: BlocBuilder<ProductBloc, ProductState>(
-                builder: (context, productState) {
-                  if (productState is ProductLoading) {
+              child: BlocConsumer<ProductBloc, ProductState>(
+                listener: (context, state) {
+                  if (state is ProductsLoaded) {
+                    setState(() {
+                      _isLoadingMore = false;
+                    });
+                  }
+                },
+                builder: (context, state) {
+                  if (state is ProductLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  final List<ProductEntity> allProducts =
-                      productState is ProductsLoaded
-                      ? productState.products
-                      : [];
+                  if (state is ProductError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${state.message}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
 
-                  return ValueListenableBuilder<String>(
-                    valueListenable: _selectedCategory,
-                    builder: (context, selectedCat, _) {
-                      return ValueListenableBuilder<String>(
-                        valueListenable: _searchQuery,
-                        builder: (context, query, _) {
-                          final queryLower = query.toLowerCase();
-                          final filteredProducts = queryLower.isEmpty
-                              ? allProducts
-                              : allProducts
-                                    .where(
-                                      (p) =>
-                                          p.title.toLowerCase().contains(
-                                            queryLower,
-                                          ) ||
-                                          p.sku.toLowerCase().contains(
-                                            queryLower,
-                                          ) ||
-                                          p.barcode.toLowerCase().contains(
-                                            queryLower,
-                                          ),
-                                    )
-                                    .toList();
+                  if (state is ProductsLoaded) {
+                    return ValueListenableBuilder<String>(
+                      valueListenable: _selectedCategory,
+                      builder: (context, activeCat, _) {
+                        return ValueListenableBuilder<String>(
+                          valueListenable: _searchQuery,
+                          builder: (context, query, _) {
+                            // Filter logic matches category filters
+                            List<ProductEntity> displayedProducts = state.products;
 
-                          final displayedProducts = selectedCat == 'All'
-                              ? filteredProducts
-                              : filteredProducts
-                                    .where(
-                                      (p) =>
-                                          p.category.toLowerCase() ==
-                                          selectedCat.toLowerCase(),
-                                    )
-                                    .toList();
+                            if (activeCat != 'All') {
+                              displayedProducts = displayedProducts
+                                  .where((p) => p.category.toLowerCase() == activeCat.toLowerCase())
+                                  .toList();
+                            }
 
-                          if (displayedProducts.isEmpty) {
-                            return Center(
-                              child: Text(
-                                'No products found matching filters.',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            );
-                          }
+                            if (query.isNotEmpty) {
+                              final q = query.toLowerCase();
+                              displayedProducts = displayedProducts.where((p) {
+                                return p.title.toLowerCase().contains(q) ||
+                                    p.sku.toLowerCase().contains(q) ||
+                                    p.barcode.toLowerCase().contains(q);
+                              }).toList();
+                            }
 
-                          return ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: displayedProducts.length,
-                            itemBuilder: (context, index) {
-                              final product = displayedProducts[index];
-                              final isLowStock = product.stock <= 5;
-
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 14),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF161F30)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: product.isActive
-                                        ? (isDark
-                                              ? Colors.white.withOpacity(0.06)
-                                              : Colors.black.withOpacity(0.04))
-                                        : Colors.orange.withOpacity(0.3),
-                                  ),
+                            if (displayedProducts.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  'No products found matching filters.',
+                                  style: theme.textTheme.bodyMedium,
                                 ),
-                                child: Row(
-                                  children: [
-                                    // Image Thumbnail
-                                    Stack(
+                              );
+                            }
+
+                            final displayCount = displayedProducts.length + (state.hasReachedMax ? 0 : 1);
+
+                            return RefreshIndicator(
+                              onRefresh: () async {
+                                context.read<ProductBloc>().add(LoadProducts());
+                              },
+                              child: ListView.builder(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: displayCount,
+                                itemBuilder: (context, index) {
+                                  if (index >= displayedProducts.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+
+                                  final product = displayedProducts[index];
+                                  final isLowStock = product.stock <= 5;
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 14),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF161F30)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: product.isActive
+                                            ? (isDark
+                                                ? Colors.white.withOpacity(0.06)
+                                                : Colors.black.withOpacity(0.04))
+                                            : Colors.orange.withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
                                       children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          child: ColorFiltered(
-                                            colorFilter: product.isActive
-                                                ? const ColorFilter.mode(
-                                                    Colors.transparent,
-                                                    BlendMode.multiply,
-                                                  )
-                                                : const ColorFilter.mode(
-                                                    Colors.grey,
-                                                    BlendMode.saturation,
-                                                  ),
-                                            child: CachedNetworkImage(
-                                              imageUrl: product.imageUrl,
-                                              width: 64,
-                                              height: 64,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                        if (!product.isActive)
-                                          Positioned(
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Container(
-                                              color: Colors.black54,
-                                              padding: const EdgeInsets.all(2),
-                                              child: const Text(
-                                                'DISABLED',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 7,
-                                                  fontWeight: FontWeight.bold,
+                                        // Image Thumbnail
+                                        Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: ColorFiltered(
+                                                colorFilter: product.isActive
+                                                    ? const ColorFilter.mode(
+                                                        Colors.transparent,
+                                                        BlendMode.multiply,
+                                                      )
+                                                    : const ColorFilter.mode(
+                                                        Colors.grey,
+                                                        BlendMode.saturation,
+                                                      ),
+                                                child: CachedNetworkImage(
+                                                  imageUrl: product.imageUrl,
+                                                  width: 64,
+                                                  height: 64,
+                                                  fit: BoxFit.cover,
+                                                  errorWidget: (context, url, error) => const Icon(Icons.image, size: 64),
                                                 ),
-                                                textAlign: TextAlign.center,
                                               ),
                                             ),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 14),
+                                            if (!product.isActive)
+                                              Positioned(
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                child: Container(
+                                                  color: Colors.black54,
+                                                  padding: const EdgeInsets.all(2),
+                                                  child: const Text(
+                                                    'DISABLED',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 7,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 14),
 
-                                    // Product Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            product.title,
-                                            style: theme.textTheme.bodyLarge
-                                                ?.copyWith(
+                                        // Product Info
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                product.title,
+                                                style: theme.textTheme.bodyLarge?.copyWith(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 14,
                                                   color: product.isActive
                                                       ? null
-                                                      : theme
-                                                            .colorScheme
-                                                            .onSurface
-                                                            .withOpacity(0.4),
+                                                      : theme.colorScheme.onSurface.withOpacity(0.4),
                                                 ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                'SKU: ',
-                                                style: theme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(fontSize: 11),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              Text(
-                                                product.sku,
-                                                style: theme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    'SKU: ',
+                                                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
+                                                  ),
+                                                  Text(
+                                                    product.sku,
+                                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
                                                       fontSize: 11,
                                                     ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                '₹${product.price.toStringAsFixed(0)}',
-                                                style: theme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: theme
-                                                          .colorScheme
-                                                          .primary,
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    '₹${product.price.toStringAsFixed(0)}',
+                                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: theme.colorScheme.primary,
                                                       fontSize: 13,
                                                     ),
-                                              ),
-                                              const SizedBox(width: 14),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 2,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      (isLowStock
-                                                              ? theme
-                                                                    .colorScheme
-                                                                    .tertiary
-                                                              : Colors.teal)
-                                                          .withOpacity(0.12),
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                ),
-                                                child: Text(
-                                                  'Stock: ${product.stock}',
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: isLowStock
-                                                        ? theme
-                                                              .colorScheme
-                                                              .tertiary
-                                                        : Colors.teal,
                                                   ),
-                                                ),
+                                                  const SizedBox(width: 14),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: (isLowStock ? theme.colorScheme.tertiary : Colors.teal)
+                                                          .withOpacity(0.12),
+                                                      borderRadius: BorderRadius.circular(6),
+                                                    ),
+                                                    child: Text(
+                                                      'Stock: ${product.stock}',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isLowStock ? theme.colorScheme.tertiary : Colors.teal,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-
-                                    // Actions Column
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        // Enable/Disable toggle
-                                        Transform.scale(
-                                          scale: 0.8,
-                                          child: Switch(
-                                            value: product.isActive,
-                                            activeColor:
-                                                theme.colorScheme.primary,
-                                            onChanged: (val) async {
-                                              await FirebaseFirestore.instance
-                                                  .collection('products')
-                                                  .doc(product.id)
-                                                  .update({'isActive': val});
-                                              if (context.mounted) {
-                                                context.read<ProductBloc>().add(
-                                                  LoadProducts(),
-                                                );
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      '"${product.title}" ${val ? 'enabled' : 'disabled'}.',
-                                                    ),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                          ),
                                         ),
-                                        Row(
+                                        const SizedBox(width: 4),
+
+                                        // Actions Column
+                                        Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            // Edit Button
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.edit_outlined,
-                                                color:
-                                                    theme.colorScheme.primary,
-                                                size: 19,
+                                            // Enable/Disable toggle
+                                            Transform.scale(
+                                              scale: 0.8,
+                                              child: Switch(
+                                                value: product.isActive,
+                                                activeColor: theme.colorScheme.primary,
+                                                onChanged: (val) async {
+                                                  await FirebaseFirestore.instance
+                                                      .collection('products')
+                                                      .doc(product.id)
+                                                      .update({'isActive': val});
+                                                  if (context.mounted) {
+                                                    context.read<ProductBloc>().add(LoadProducts());
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('"${product.title}" ${val ? 'enabled' : 'disabled'}.'),
+                                                        behavior: SnackBarBehavior.floating,
+                                                      ),
+                                                    );
+                                                  }
+                                                },
                                               ),
-                                              onPressed: () {
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  AppRoutes.adminEditProduct,
-                                                  arguments: product.id,
-                                                );
-                                              },
                                             ),
-                                            // Delete Button
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.delete_outline_rounded,
-                                                color:
-                                                    theme.colorScheme.tertiary,
-                                                size: 19,
-                                              ),
-                                              onPressed: () => _deleteProduct(
-                                                context,
-                                                product,
-                                              ),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                // Edit Button
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.edit_outlined,
+                                                    color: theme.colorScheme.primary,
+                                                    size: 19,
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pushNamed(
+                                                      context,
+                                                      AppRoutes.adminEditProduct,
+                                                      arguments: product.id,
+                                                    );
+                                                  },
+                                                ),
+                                                // Delete Button
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.delete_outline_rounded,
+                                                    color: theme.colorScheme.tertiary,
+                                                    size: 19,
+                                                  ),
+                                                  onPressed: () => _deleteProduct(context, product),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  );
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
               ),
             ),

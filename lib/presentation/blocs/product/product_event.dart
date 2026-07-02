@@ -9,9 +9,18 @@ abstract class ProductEvent extends Equatable {
 
 class LoadProducts extends ProductEvent {}
 
+class LoadMoreProducts extends ProductEvent {}
+
 class LoadProductsByCategory extends ProductEvent {
   final String category;
   const LoadProductsByCategory(this.category);
+  @override
+  List<Object?> get props => [category];
+}
+
+class LoadMoreProductsByCategory extends ProductEvent {
+  final String category;
+  const LoadMoreProductsByCategory(this.category);
   @override
   List<Object?> get props => [category];
 }
