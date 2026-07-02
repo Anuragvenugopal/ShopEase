@@ -35,7 +35,7 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
       } else {
         await _wishlistRepository.addToWishlist(event.userId, event.productId);
       }
-      // Reload wishlist
+      
       final items = await _wishlistRepository.getWishlistItems(event.userId);
       final ids = items.map((p) => p.id).toSet();
       emit(WishlistLoaded(items: items, wishlistedIds: ids));
@@ -46,7 +46,7 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
 
   Future<void> _onCheckStatus(
       CheckWishlistStatus event, Emitter<WishlistState> emit) async {
-    // No-op: status is derived from the loaded WishlistLoaded state
-    // This is a no-op handler to avoid unhandled event warnings
+    
+    
   }
 }

@@ -4,7 +4,7 @@ import '../../domain/entities/order_entity.dart';
 
 part 'order_model.g.dart';
 
-// OrderItemModel still uses code-gen (safe — no Timestamp field)
+
 @JsonSerializable()
 class OrderItemModel {
   final String productId;
@@ -35,7 +35,7 @@ class OrderItemModel {
       );
 }
 
-// OrderModel uses a manual fromJson to safely handle Firestore Timestamp
+
 class OrderModel {
   final String id;
   final String userId;
@@ -57,13 +57,13 @@ class OrderModel {
     this.trackingNumber,
   });
 
-  /// Handles Firestore Timestamp, DateTime, String, or int (millis).
+  
   static DateTime _parseDate(dynamic value) {
     if (value is Timestamp) return value.toDate();
     if (value is DateTime) return value;
     if (value is String) return DateTime.parse(value);
     if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
-    return DateTime.now(); // fallback — should never happen
+    return DateTime.now(); 
   }
 
   factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel(

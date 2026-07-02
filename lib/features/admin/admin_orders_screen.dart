@@ -46,7 +46,7 @@ class AdminOrdersScreen extends StatelessWidget {
       case 'pending':
         return Colors.blue;
       default:
-        return theme.colorScheme.tertiary; // cancelled
+        return theme.colorScheme.tertiary; 
     }
   }
 
@@ -91,7 +91,7 @@ class AdminOrdersScreen extends StatelessWidget {
                 final amount = (data['totalAmount'] as num?)?.toDouble() ?? 0.0;
                 final address = data['shippingAddress'] ?? 'No Address';
                 
-                // Parse items to summary string
+                
                 final itemsList = data['items'] as List<dynamic>? ?? [];
                 final itemsSummary = itemsList.map((item) {
                   final title = item['title'] ?? 'Product';
@@ -99,7 +99,7 @@ class AdminOrdersScreen extends StatelessWidget {
                   return '$title (x$qty)';
                 }).join(', ');
 
-                // Parse createdAt timestamp
+                
                 String dateStr = 'Unknown date';
                 if (data['createdAt'] != null) {
                   final timestamp = data['createdAt'] as Timestamp;
@@ -122,7 +122,7 @@ class AdminOrdersScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Order Header
+                      
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -157,7 +157,7 @@ class AdminOrdersScreen extends StatelessWidget {
                       ),
                       const Divider(height: 24),
 
-                      // Customer details
+                      
                       _buildOrderInfoRow('Placed On', dateStr, theme),
                       const SizedBox(height: 6),
                       _buildOrderInfoRow('Shipping Address', address, theme),
@@ -173,7 +173,7 @@ class AdminOrdersScreen extends StatelessWidget {
 
                       const Divider(height: 24),
 
-                      // Action Status Controller Dropdown
+                      
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

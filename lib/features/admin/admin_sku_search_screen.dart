@@ -105,7 +105,7 @@ class AdminSkuSearchScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Search field
+            
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: CustomTextField(
@@ -119,7 +119,7 @@ class AdminSkuSearchScreen extends StatelessWidget {
               ),
             ),
 
-            // Search results listing
+            
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore.collection('products').snapshots(),

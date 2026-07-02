@@ -40,7 +40,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       String emailToUse = email.trim();
       if (!emailToUse.contains('@')) {
-        // Treat as username or full name
+        
         final querySnap = await _firestore
             .collection('users')
             .where('displayName', isEqualTo: emailToUse)
@@ -53,7 +53,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
             emailToUse = userEmail;
           }
         } else {
-          // Try case-insensitive lookup
+          
           final allUsersSnap = await _firestore.collection('users').get();
           if (allUsersSnap.docs.isNotEmpty) {
             try {
@@ -68,7 +68,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
                 emailToUse = userEmail;
               }
             } catch (_) {
-              // Fallback
+              
               emailToUse = '$emailToUse@shopease.com';
             }
           } else {
@@ -185,7 +185,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         {'displayName': displayName, 'phoneNumber': phoneNumber},
         SetOptions(merge: true),
       );
-      // Also update Firebase Auth display name
+      
       await _firebaseAuth.currentUser?.updateDisplayName(displayName);
       final updated = await _getUserFromFirestore(uid);
       return updated!;
@@ -201,7 +201,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return UserModel.fromJson(doc.data()!);
       }
     } catch (e) {
-      // Ignore or log error
+      
     }
     return null;
   }

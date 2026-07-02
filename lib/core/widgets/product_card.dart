@@ -17,7 +17,7 @@ class ProductCard extends StatefulWidget {
   final ValueChanged<bool>? onWishlistToggle;
   final bool initialIsWishlisted;
   final int cartQuantity;
-  final int? offerPercentage; // sourced directly from Firebase
+  final int? offerPercentage; 
 
   const ProductCard({
     super.key,
@@ -67,7 +67,7 @@ class _ProductCardState extends State<ProductCard>
   @override
   void didUpdateWidget(covariant ProductCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sync local wishlist state whenever the BLoC-driven prop changes
+    
     if (oldWidget.initialIsWishlisted != widget.initialIsWishlisted) {
       setState(() {
         _isWishlisted = widget.initialIsWishlisted;
@@ -82,8 +82,8 @@ class _ProductCardState extends State<ProductCard>
   }
 
   void _toggleWishlist() {
-    // Capture the OLD state before toggling so the callback
-    // correctly tells the BLoC whether the item WAS wishlisted.
+    
+    
     final wasWishlisted = _isWishlisted;
     setState(() {
       _isWishlisted = !_isWishlisted;
@@ -99,7 +99,7 @@ class _ProductCardState extends State<ProductCard>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Use Firebase-sourced offerPercentage; fall back to local calc for old docs
+    
     final discountPercent = widget.offerPercentage ??
         (widget.originalPrice != null
             ? (((widget.originalPrice! - widget.price) / widget.originalPrice!) * 100).round()
@@ -131,7 +131,7 @@ class _ProductCardState extends State<ProductCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image & Badges
+            
             Stack(
               children: [
                 Hero(
@@ -155,7 +155,7 @@ class _ProductCardState extends State<ProductCard>
                   ),
                 ),
 
-                // Sale Tag/Discount Badge
+                
                 if (discountPercent > 0)
                   Positioned(
                     top: 10,
@@ -180,7 +180,7 @@ class _ProductCardState extends State<ProductCard>
                     ),
                   ),
 
-                // Wishlist Icon (Animated Scale)
+                
                 Positioned(
                   top: 6,
                   right: 6,
@@ -216,14 +216,14 @@ class _ProductCardState extends State<ProductCard>
               ],
             ),
 
-            // Details
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Rating & Reviews Count
+                  
                   Row(
                     children: [
                       const Icon(
@@ -251,7 +251,7 @@ class _ProductCardState extends State<ProductCard>
                   ),
                   const SizedBox(height: 4),
 
-                  // Title
+                  
                   Text(
                     widget.title,
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -264,7 +264,7 @@ class _ProductCardState extends State<ProductCard>
                   ),
                   const SizedBox(height: 6),
 
-                  // Pricing & Cart Button
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -296,7 +296,7 @@ class _ProductCardState extends State<ProductCard>
                         ),
                       ),
 
-                      // Add to Cart Button or Quantity Counter
+                      
                       if (widget.cartQuantity > 0)
                         Container(
                           height: 36,

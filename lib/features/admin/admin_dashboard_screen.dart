@@ -62,7 +62,7 @@ class AdminDashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // Background validation
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _ensureAdminAuth(context);
     });
@@ -71,7 +71,7 @@ class AdminDashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Admin Operations'),
         actions: [
-          // Refresh stats
+          
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh Stats',
@@ -79,7 +79,7 @@ class AdminDashboardScreen extends StatelessWidget {
               context.read<AdminStatsBloc>().add(FetchAdminStats());
             },
           ),
-          // Switch to Customer Mode / Logout Admin
+          
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             tooltip: 'Exit Admin Panel',
@@ -115,7 +115,7 @@ class AdminDashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ── Live Dashboard Metrics ────────────────────────────────────
+              
               BlocBuilder<AdminStatsBloc, AdminStatsState>(
                 builder: (context, state) {
                   if (state is AdminStatsLoading ||
@@ -211,7 +211,7 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // ── Operations Management ─────────────────────────────────────
+              
               Text(
                 'Operations Management',
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -287,7 +287,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Return to login
+              
               CustomButton(
                 text: 'Exit Admin Portal',
                 isOutlined: true,
@@ -322,7 +322,7 @@ class AdminDashboardScreen extends StatelessWidget {
     );
   }
 
-  /// Skeleton placeholder shown while Firestore is loading.
+  
   Widget _buildStatsShimmer(ThemeData theme) {
     return GridView.count(
       shrinkWrap: true,

@@ -32,14 +32,14 @@ class QuantitySelector extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Decrease Button
+          
           _buildActionButton(
             context,
             icon: Icons.remove_rounded,
             onPressed: quantity > minQuantity ? () => onChanged(quantity - 1) : null,
           ),
           
-          // Quantity Value Display
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14.0),
             child: Text(
@@ -51,7 +51,7 @@ class QuantitySelector extends StatelessWidget {
             ),
           ),
           
-          // Increase Button
+          
           _buildActionButton(
             context,
             icon: Icons.add_rounded,

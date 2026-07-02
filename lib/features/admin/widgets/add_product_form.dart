@@ -24,7 +24,7 @@ class AddProductForm extends StatefulWidget {
 class _AddProductFormState extends State<AddProductForm> {
   final _formKey = GlobalKey<FormState>();
 
-  /// Auto-generated Firestore-style 20-char alphanumeric product ID.
+  
   late final String _autoProductId;
 
   final _titleController = TextEditingController();
@@ -50,7 +50,7 @@ class _AddProductFormState extends State<AddProductForm> {
     }
   }
 
-  /// Generates a 20-character Firestore-compatible document ID.
+  
   static String _generateFirestoreId() {
     const chars =
         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -62,7 +62,7 @@ class _AddProductFormState extends State<AddProductForm> {
     final prefix = category.length >= 3
         ? category.substring(0, 3).toUpperCase()
         : 'PRD';
-    final randNum = Random().nextInt(900) + 100; // 100-999
+    final randNum = Random().nextInt(900) + 100; 
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     final rand = Random();
     final randChar =
@@ -161,7 +161,7 @@ class _AddProductFormState extends State<AddProductForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Auto-generated Product ID (read-only) ──────────────────
+            
             Container(
               decoration: BoxDecoration(
                 color: isDark
@@ -230,7 +230,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Image Upload Area ───────────────────────────────────────
+            
             InkWell(
               onTap: _isLoading ? null : _pickImage,
               borderRadius: BorderRadius.circular(20),
@@ -323,7 +323,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Product Title ───────────────────────────────────────────
+            
             CustomTextField(
               controller: _titleController,
               labelText: 'Product Name',
@@ -335,7 +335,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Category Dropdown ───────────────────────────────────────
+            
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('categories')
@@ -402,7 +402,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── SKU & Barcode ───────────────────────────────────────────
+            
             Row(
               children: [
                 Expanded(
@@ -443,7 +443,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Price & Stock ───────────────────────────────────────────
+            
             Row(
               children: [
                 Expanded(
@@ -481,7 +481,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Description ─────────────────────────────────────────────
+            
             CustomTextField(
               controller: _descriptionController,
               labelText: 'Product Description',
@@ -493,7 +493,7 @@ class _AddProductFormState extends State<AddProductForm> {
             ),
             const SizedBox(height: 36),
 
-            // ── Save Button ─────────────────────────────────────────────
+            
             CustomButton(
               text: 'Save to Catalog',
               isLoading: _isLoading,

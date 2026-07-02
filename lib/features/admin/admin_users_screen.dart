@@ -48,7 +48,7 @@ class AdminUsersScreen extends StatelessWidget {
                 );
               }
 
-              // Separate into lists
+              
               final List<Map<String, dynamic>> admins = [];
               final List<Map<String, dynamic>> customers = [];
 

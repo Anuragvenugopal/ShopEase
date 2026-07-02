@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:injectable/injectable.dart';
 
-/// Aggregated stats fetched directly from Firestore for the admin dashboard.
+
 class AdminDashboardStats {
   final int totalProducts;
   final int totalUsers;
-  final int newOrders;       // orders with status == 'pending'
-  final int lowStockCount;   // products with stock <= lowStockThreshold
+  final int newOrders;       
+  final int lowStockCount;   
 
   const AdminDashboardStats({
     required this.totalProducts,
@@ -20,7 +20,7 @@ class AdminDashboardStats {
 class AdminStatsDataSource {
   final FirebaseFirestore _firestore;
 
-  /// Products with stock at or below this value count as low-stock.
+  
   static const int lowStockThreshold = 5;
 
   AdminStatsDataSource(this._firestore);

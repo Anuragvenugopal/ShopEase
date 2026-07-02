@@ -35,7 +35,7 @@ class LoadingSkeleton extends StatelessWidget {
     );
   }
 
-  // Pre-configured Product Card Skeleton
+  
   static Widget productCardSkeleton() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -64,7 +64,7 @@ class LoadingSkeleton extends StatelessWidget {
     );
   }
 
-  // Pre-configured Grid Skeleton
+  
   static Widget gridSkeleton({int itemCount = 4}) {
     return GridView.builder(
       shrinkWrap: true,
@@ -80,7 +80,7 @@ class LoadingSkeleton extends StatelessWidget {
     );
   }
 
-  // Pre-configured List Skeleton
+  
   static Widget listSkeleton({int itemCount = 3}) {
     return ListView.builder(
       shrinkWrap: true,

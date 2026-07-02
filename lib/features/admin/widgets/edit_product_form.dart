@@ -210,7 +210,7 @@ class _EditProductFormState extends State<EditProductForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Product ID (read-only, from Firestore) ─────────────────
+            
             Container(
               decoration: BoxDecoration(
                 color: isDark
@@ -279,7 +279,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Image Upload Area ───────────────────────────────────────
+            
             InkWell(
               onTap: _isLoading ? null : _pickImage,
               borderRadius: BorderRadius.circular(20),
@@ -414,7 +414,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // ── Product Title ───────────────────────────────────────────
+            
             CustomTextField(
               controller: _titleController,
               labelText: 'Product Name',
@@ -425,7 +425,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // Category selector dropdown
+            
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('categories')
@@ -494,7 +494,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // SKU & Barcode Row
+            
             Row(
               children: [
                 Expanded(
@@ -519,7 +519,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // Price & Stock Row
+            
             Row(
               children: [
                 Expanded(
@@ -555,7 +555,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // Description Field
+            
             CustomTextField(
               controller: _descriptionController,
               labelText: 'Product Description',
@@ -566,7 +566,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 18),
 
-            // Switch for Enabling/Disabling Product
+            
             SwitchListTile(
               title: const Text('Product Active Status'),
               subtitle: Text(
@@ -584,7 +584,7 @@ class _EditProductFormState extends State<EditProductForm> {
             ),
             const SizedBox(height: 24),
 
-            // Save Action Button
+            
             CustomButton(
               text: 'Save Changes',
               isLoading: _isLoading,

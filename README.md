@@ -1,93 +1,92 @@
-# ShopEase
+# ShopEase - Machine Test Submission
 
-ShopEase is a mini e-commerce application built using Flutter, Firebase, and BLoC. It includes a storefront for customers and a management dashboard for admins.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-Make sure you have these installed:
-* Flutter SDK (version 3.5.0 or higher)
-* Dart SDK (version 3.0.0 or higher)
-* JDK 17 (for Android)
+ShopEase is a Flutter mini e-commerce application built for a technical machine test. It uses Firebase for back-end services and BLoC for clean state management.
 
 ---
 
-## Installation and Setup
+## Features Implemented
 
-Follow these simple steps to run the app locally:
+### User Module
+* Authentication (Sign In, Sign Up, Sign Out, Forgot Password)
+* Storefront Home Screen (Sliders, Categories, Trending products)
+* Product Details Screen (Reviews, specs, Stock indicators, Add to Cart/Wishlist)
+* Shopping Cart & Checkout Flow (Calculates totals and place order)
+* Wishlist (Add, remove, and move-to-cart shortcuts)
+* Dynamic Catalog Search (Search by name, SKU, or barcode)
 
-1. Clone the repository:
+### Admin Module
+* Secure Admin Login (Using designated admin account)
+* Analytics Dashboard (Displays total products, users, pending orders, and low-stock items)
+* Inventory CRUD (Add, Edit, and Delete products with active/inactive toggles)
+* Barcode & QR Stock Scanner (Camera-based stock lookup and addition)
+* Manual SKU Stock Search (Backup stock replenishment without camera)
+* Auto SKU/Barcode Generator (Creates unique codes for new items)
+* Category Management (Create/Edit categories and add subcategories)
+* Registered Users Directory (Segments admins and customer listings in full screen)
+* Order Management (View and update order delivery statuses)
+
+### Extra Capabilities
+* Firestore Query Pagination (Loads products in pages of 10 items)
+* Bottom Scroll Loading Spinner (Circular progress indicator on pagination)
+* Pull-to-Refresh (On storefront and inventory lists)
+* System Brightness Adaptive Dark Mode
+* Reusable widgets, validation inputs, and responsive layouts
+
+---
+
+## Tech Stack
+* State Management: BLoC (Flutter BLoC package)
+* Dependency Injection: Get It & Injectable
+* Backend: Firebase Auth, Cloud Firestore, Firebase Storage
+* Scanner: Mobile Scanner
+
+---
+
+## Running the Project Locally
+
+Follow these steps to run the application on your local machine:
+
+1. Clone the project:
    ```bash
    git clone https://github.com/Anuragvenugopal/ShopEase.git
    cd ShopEase
    ```
 
-2. Get project dependencies:
+2. Download the dependencies:
    ```bash
    flutter pub get
    ```
 
-3. Generate the dependency injection files:
+3. Run code generation for dependency injection:
    ```bash
    flutter pub run build_runner build --delete-conflicting-outputs
    ```
 
-4. Run the application:
+4. Launch the application:
    ```bash
    flutter run
    ```
 
 ---
 
-## Default Login Credentials
+## Admin Credentials
 
-Use these details to access the admin features in the app:
-
+Use these details to access the administrative dashboard:
 * Email: admin@shopease.com
 * Password: Admin@123
 
 ---
 
-## Firebase Configuration Guide
+## Firebase Configuration
 
-Follow these steps to connect the app to your own Firebase project:
+To link your own Firebase database instance to this project:
 
-### 1. Enable Firebase Services
-Go to the Firebase Console, create a new project, and enable these services:
-* Authentication: Enable the Email/Password sign-in provider.
-* Cloud Firestore: Enable Firestore Database.
-* Storage: Enable Firebase Storage to save images.
-
-### 2. Add Platform Config Files
-
-* For Android:
-  1. Add an Android app in your Firebase project settings using package name: com.shopease.shopease
-  2. Download the google-services.json file.
-  3. Save it to: android/app/google-services.json
-
-* For iOS:
-  1. Add an iOS app in your Firebase project settings using bundle ID: com.shopease.shopease
-  2. Download the GoogleService-Info.plist file.
-  3. Save it to: ios/Runner/GoogleService-Info.plist
-
-### 3. Setup Firestore Collections
-Add these basic collections to start:
-
-* categories Collection:
-  * Add a document with field: name (String) and subcategories (Array of Strings).
-
-* products Collection:
-  * Add a document with fields: title, description, price, category, subcategory, stock, sku, barcode, imageUrl, isActive, rating, reviewsCount, reviews.
-
----
-
-## Project Structure
-
-* lib/core: App theme, routing setup, and shared widgets.
-* lib/data: API callers, models, and repository implementations.
-* lib/domain: Entities and repository interface contracts.
-* lib/features: App pages divided into admin and user folders.
-* lib/presentation: BLoC logic for state management.
+1. Create a Firebase project in your Firebase Console.
+2. Enable these services in your console:
+   * Authentication: Turn on Email/Password sign-in.
+   * Cloud Firestore: Create database in test mode.
+   * Firebase Storage: Create default storage bucket.
+3. Register your app client on Firebase with package name `com.shopease.shopease`.
+4. Download the platform settings files and save them to:
+   * Android: `android/app/google-services.json`
+   * iOS: `ios/Runner/GoogleService-Info.plist`

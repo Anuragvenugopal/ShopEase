@@ -41,7 +41,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      // Navigate to Admin Dashboard, clear previous customer routes
+      
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRoutes.adminDashboard,
@@ -75,7 +75,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
       final password = _passwordController.text;
 
       if (email == 'admin@shopease.com' && password == 'Admin@123') {
-        // Authenticate in Firebase Auth to pass Firestore security rules
+        
         FirebaseAuth.instance
             .signInWithEmailAndPassword(email: email, password: password)
             .then((_) {
@@ -85,11 +85,11 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
           if (errorStr.contains('user-not-found') ||
               errorStr.contains('INVALID_LOGIN_CREDENTIALS') ||
               errorStr.contains('invalid-credential')) {
-            // User does not exist in Firebase Auth yet, let's create it
+            
             FirebaseAuth.instance
                 .createUserWithEmailAndPassword(email: email, password: password)
                 .then((cred) {
-              // Register the admin user document in users collection
+              
               FirebaseFirestore.instance
                   .collection('users')
                   .doc(cred.user!.uid)
@@ -101,7 +101,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
               }).then((_) {
                 _completeAdminLogin();
               }).catchError((err) {
-                // Even if Firestore doc write fails, Auth was successful
+                
                 _completeAdminLogin();
               });
             }).catchError((err) {
@@ -136,7 +136,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
       children: [
         const SizedBox(height: 30),
 
-        // Security Warning Header Notice
+        
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -181,7 +181,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
 
         const SizedBox(height: 48),
 
-        // Console Title
+        
         Center(
           child: Column(
             children: [
@@ -209,12 +209,12 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
 
         const SizedBox(height: 40),
 
-        // Admin Form
+        
         Form(
           key: _formKey,
           child: Column(
             children: [
-              // Admin ID Code
+              
               CustomTextField(
                 controller: _usernameController,
                 labelText: 'Staff Login ID',
@@ -229,7 +229,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
               ),
               const SizedBox(height: 20),
 
-              // Password
+              
               CustomTextField(
                 controller: _passwordController,
                 labelText: 'Console Secret Key',
@@ -246,7 +246,7 @@ class _AdminLoginFormState extends State<AdminLoginForm> {
               ),
               const SizedBox(height: 32),
 
-              // Login Action Button
+              
               CustomButton(
                 text: 'Authenticate Console',
                 isLoading: _isLoading,

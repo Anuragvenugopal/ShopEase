@@ -37,7 +37,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
         totalAmount: event.totalAmount,
         shippingAddress: event.shippingAddress,
       );
-      // Clear the cart after placing order
+      
       await _cartRepository.clearCart(event.userId);
       emit(OrderPlaced(order));
     } catch (e) {

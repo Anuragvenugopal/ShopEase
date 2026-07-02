@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import './fade_slide_page_route.dart';
-import '../../features/authentication/splash_screen.dart';
-import '../../features/authentication/onboarding_screen.dart';
-import '../../features/authentication/login_screen.dart';
-import '../../features/authentication/register_screen.dart';
-import '../../features/authentication/forgot_password_screen.dart';
-import '../../features/home/home_screen.dart';
-import '../../features/categories/categories_screen.dart';
-import '../../features/categories/category_products_screen.dart';
-import '../../features/products/product_details_screen.dart';
-import '../../features/search/search_screen.dart';
-import '../../features/wishlist/wishlist_screen.dart';
-import '../../features/cart/cart_screen.dart';
-import '../../features/cart/checkout_screen.dart';
-import '../../features/orders/order_success_screen.dart';
+import '../../features/user/authentication/splash_screen.dart';
+import '../../features/user/authentication/onboarding_screen.dart';
+import '../../features/user/authentication/login_screen.dart';
+import '../../features/user/authentication/register_screen.dart';
+import '../../features/user/authentication/forgot_password_screen.dart';
+import '../../features/user/home/home_screen.dart';
+import '../../features/user/categories/categories_screen.dart';
+import '../../features/user/categories/category_products_screen.dart';
+import '../../features/user/products/product_details_screen.dart';
+import '../../features/user/search/search_screen.dart';
+import '../../features/user/wishlist/wishlist_screen.dart';
+import '../../features/user/cart/cart_screen.dart';
+import '../../features/user/cart/checkout_screen.dart';
+import '../../features/user/orders/order_success_screen.dart';
 
-import '../../features/profile/profile_screen.dart';
-import '../../features/profile/edit_profile_screen.dart';
-import '../../features/profile/settings_screen.dart';
+import '../../features/user/profile/profile_screen.dart';
+import '../../features/user/profile/edit_profile_screen.dart';
+import '../../features/user/profile/settings_screen.dart';
 import '../../features/admin/admin_login_screen.dart';
 import '../../features/admin/admin_dashboard_screen.dart';
 import '../../features/admin/admin_product_list_screen.dart';
@@ -102,7 +102,7 @@ class AppRoutes {
         return _buildRoute(const ProfileScreen(), settings);
       case editProfile:
         return _buildRoute(const EditProfileScreen(), settings);
-      case settingsRoute: // named specifically to avoid conflict with standard flutter keywords if any
+      case settingsRoute: 
         return _buildRoute(const SettingsScreen(), settings);
       case adminLogin:
         return _buildRoute(const AdminLoginScreen(), settings);
@@ -139,7 +139,7 @@ class AppRoutes {
     }
   }
 
-  // Use settingsRoute constant instead of settings
+  
   static const String settingsRoute = '/settings';
 
   static Route<dynamic> _buildRoute(Widget page, RouteSettings settings) {

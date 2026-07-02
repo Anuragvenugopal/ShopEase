@@ -89,7 +89,7 @@ class _AddCategoryFormState extends State<AddCategoryForm> {
             ),
             const SizedBox(height: 16),
             
-            // Image Picker Layout
+            
             InkWell(
               onTap: _isLoading ? null : _pickImage,
               borderRadius: BorderRadius.circular(20),

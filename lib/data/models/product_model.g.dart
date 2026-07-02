@@ -1,10 +1,10 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+
 
 part of 'product_model.dart';
 
-// **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
+
+
+
 
 ReviewModel _$ReviewModelFromJson(Map<String, dynamic> json) => ReviewModel(
   name: json['name'] as String,

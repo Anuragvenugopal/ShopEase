@@ -18,9 +18,9 @@ class CartRepositoryImpl implements CartRepository {
 
   @override
   Future<void> addToCart(String userId, CartItemEntity item) async {
-    // BLoC handles the duplicate-check optimistically in memory.
-    // We just persist the item directly; if it exists it gets overwritten
-    // with the correct merged quantity from the BLoC's optimistic state.
+    
+    
+    
     await _dataSource.addOrUpdateItem(userId, CartItemModel.fromEntity(item));
   }
 

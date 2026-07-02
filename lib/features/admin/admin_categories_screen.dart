@@ -162,7 +162,7 @@ class AdminCategoriesScreen extends StatelessWidget {
                 final title = data['name'] ?? data['title'] ?? '';
                 final imageUrl = data['imageUrl'] ?? '';
 
-                // Parse subcategories from field
+                
                 final List<dynamic> subsRaw = data['subcategories'] ?? [];
                 final List<String> subs = subsRaw.map((s) => s.toString()).toList();
 

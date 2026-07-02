@@ -28,7 +28,7 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Styled Floating Icon Background
+            
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -43,7 +43,7 @@ class EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Title
+            
             Text(
               title,
               style: theme.textTheme.titleLarge?.copyWith(
@@ -55,7 +55,7 @@ class EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             
-            // Description
+            
             Text(
               description,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -65,7 +65,7 @@ class EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             
-            // Optional Action Button
+            
             if (actionText != null && onActionPressed != null)
               CustomButton(
                 text: actionText!,

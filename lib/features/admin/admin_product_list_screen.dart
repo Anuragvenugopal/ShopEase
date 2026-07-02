@@ -83,7 +83,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
       }
       _isInit = false;
 
-      // Dispatch LoadProducts if initial or not loaded
+      
       final productState = context.read<ProductBloc>().state;
       if (productState is! ProductsLoaded) {
         context.read<ProductBloc>().add(LoadProducts());
@@ -112,7 +112,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search textfield
+            
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
               child: CustomTextField(
@@ -126,7 +126,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
               ),
             ),
 
-            // Category choice chips filter
+            
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('categories')
@@ -200,7 +200,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Products grid list with BLoC state mapping
+            
             Expanded(
               child: BlocConsumer<ProductBloc, ProductState>(
                 listener: (context, state) {
@@ -231,7 +231,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                         return ValueListenableBuilder<String>(
                           valueListenable: _searchQuery,
                           builder: (context, query, _) {
-                            // Filter logic matches category filters
+                            
                             List<ProductEntity> displayedProducts = state.products;
 
                             if (activeCat != 'All') {
@@ -299,7 +299,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                                     ),
                                     child: Row(
                                       children: [
-                                        // Image Thumbnail
+                                        
                                         Stack(
                                           children: [
                                             ClipRRect(
@@ -346,7 +346,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                                         ),
                                         const SizedBox(width: 14),
 
-                                        // Product Info
+                                        
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,11 +414,11 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                                         ),
                                         const SizedBox(width: 4),
 
-                                        // Actions Column
+                                        
                                         Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            // Enable/Disable toggle
+                                            
                                             Transform.scale(
                                               scale: 0.8,
                                               child: Switch(
@@ -444,7 +444,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                                             Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                // Edit Button
+                                                
                                                 IconButton(
                                                   icon: Icon(
                                                     Icons.edit_outlined,
@@ -459,7 +459,7 @@ class _AdminProductListScreenState extends State<AdminProductListScreen> {
                                                     );
                                                   },
                                                 ),
-                                                // Delete Button
+                                                
                                                 IconButton(
                                                   icon: Icon(
                                                     Icons.delete_outline_rounded,

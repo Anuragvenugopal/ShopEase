@@ -26,7 +26,7 @@ class ProductRemoteDataSource {
     int limit = 10,
     DocumentSnapshot? lastDocument,
   }) async {
-    // Seed categories if not yet created
+    
     final catSnapshot = await _firestore.collection('categories').get();
     if (catSnapshot.docs.isEmpty) {
       final Map<String, List<String>> initialSubs = {
@@ -48,13 +48,13 @@ class ProductRemoteDataSource {
       }
     }
 
-    // Fetch existing SKUs to avoid duplicates
+    
     var snapshot = await _firestore.collection('products').get();
     final existingSkus = snapshot.docs
         .map((d) => d.data()['sku'] as String? ?? '')
         .toSet();
 
-    // Seed any missing products from DummyData
+    
     bool seeded = false;
     for (final p in DummyData.products) {
       if (!existingSkus.contains(p.sku)) {
@@ -152,8 +152,8 @@ class ProductRemoteDataSource {
   }
 
   Future<List<ProductModel>> searchProducts(String query) async {
-    // Firestore doesn't support full-text search natively.
-    // Fetch all and filter client-side (or use Algolia/Typesense for production).
+    
+    
     final snapshot = await _firestore.collection('products').get();
     final q = query.toLowerCase();
     return snapshot.docs
@@ -229,7 +229,7 @@ class ProductRemoteDataSource {
             final storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
             await storageRef.delete();
           } catch (e) {
-            // Ignore/log storage deletion errors if the image doesn't exist
+            
           }
         }
       }

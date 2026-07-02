@@ -15,7 +15,7 @@ class WishlistRepositoryImpl implements WishlistRepository {
   Future<List<ProductEntity>> getWishlistItems(String userId) async {
     final ids = await _dataSource.getWishlistIds(userId);
     if (ids.isEmpty) return [];
-    // Fetch each product by ID
+    
     final products = await Future.wait(
       ids.map((id) => _productRepository.getProductById(id)),
     );

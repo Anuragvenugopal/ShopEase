@@ -96,7 +96,7 @@ class _EditCategoryFormState extends State<EditCategoryForm> {
             ),
             const SizedBox(height: 16),
             
-            // Image Picker / Preview Layout
+            
             InkWell(
               onTap: _isLoading ? null : _pickImage,
               borderRadius: BorderRadius.circular(20),

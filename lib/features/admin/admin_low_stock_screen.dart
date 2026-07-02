@@ -131,7 +131,7 @@ class AdminLowStockScreen extends StatelessWidget {
 
             return Column(
               children: [
-                // Alert Banner Info
+                
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   color: theme.colorScheme.tertiary.withOpacity(0.08),
@@ -153,7 +153,7 @@ class AdminLowStockScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Low stock catalog items
+                
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -180,7 +180,7 @@ class AdminLowStockScreen extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                // Image
+                                
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: imageUrl.startsWith('http')
@@ -194,7 +194,7 @@ class AdminLowStockScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 14),
 
-                                // Details
+                                
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +239,7 @@ class AdminLowStockScreen extends StatelessWidget {
                             ),
                             const Divider(height: 24),
 
-                            // Quick replenish button
+                            
                             CustomButton(
                               text: 'Replenish Inventory Units',
                               icon: Icons.add_circle_outline_rounded,

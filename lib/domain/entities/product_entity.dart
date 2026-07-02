@@ -22,7 +22,7 @@ class ProductEntity extends Equatable {
   final String imageUrl;
   final double price;
   final double? originalPrice;
-  final int? offerPercentage; // read directly from Firebase
+  final int? offerPercentage; 
   final double rating;
   final int reviewsCount;
   final String category;
@@ -31,7 +31,7 @@ class ProductEntity extends Equatable {
   final String barcode;
   final int stock;
   final List<ReviewEntity> reviews;
-  final bool isActive; // enable/disable without deleting
+  final bool isActive; 
 
   const ProductEntity({
     required this.id,

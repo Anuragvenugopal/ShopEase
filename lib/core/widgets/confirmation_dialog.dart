@@ -22,7 +22,7 @@ class ConfirmationDialog extends StatefulWidget {
   @override
   State<ConfirmationDialog> createState() => _ConfirmationDialogState();
 
-  // Static helper to display dialog
+  
   static Future<void> show(
     BuildContext context, {
     required String title,
@@ -46,7 +46,7 @@ class ConfirmationDialog extends StatefulWidget {
     );
   }
 
-  // Static helper to show action bottom sheets
+  
   static Future<T?> showActionBottomSheet<T>(
     BuildContext context, {
     required Widget child,
@@ -75,7 +75,7 @@ class ConfirmationDialog extends StatefulWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Pull indicator
+              
               Center(
                 child: Container(
                   width: 38,
@@ -128,7 +128,7 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Warning/Alert Header
+            
             Row(
               children: [
                 Container(
@@ -157,7 +157,7 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
             ),
             const SizedBox(height: 14),
             
-            // Message Body
+            
             Text(
               widget.content,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -167,7 +167,7 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
             ),
             const SizedBox(height: 18),
             
-            // Buttons Row
+            
             Row(
               children: [
                 Expanded(
@@ -190,7 +190,7 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
                       setState(() {
                         _isLoading = true;
                       });
-                      // Short delay to show loading animation before completing onConfirm and popping
+                      
                       Future.delayed(const Duration(milliseconds: 1200), () {
                         if (mounted) {
                           Navigator.pop(context);

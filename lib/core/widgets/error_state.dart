@@ -24,7 +24,7 @@ class ErrorState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Error Icon
+            
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -39,7 +39,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Title
+            
             Text(
               title,
               style: theme.textTheme.titleLarge?.copyWith(
@@ -51,7 +51,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Error Message
+            
             Text(
               errorMessage,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -61,7 +61,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Retry Button
+            
             CustomButton(
               text: 'Retry Again',
               onPressed: onRetry,

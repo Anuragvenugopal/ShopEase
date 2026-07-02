@@ -23,7 +23,7 @@ class CustomDrawer extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Drawer Header — real Firebase user data
+          
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               final name   = state is Authenticated ? (state.user.displayName ?? 'User') : 'User';
@@ -59,7 +59,7 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
 
-          // Drawer Body Scrollable Items
+          
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -80,7 +80,7 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.pushReplacementNamed(
                       context,
                       AppRoutes.home,
-                      arguments: 1, // Categories tab
+                      arguments: 1, 
                     );
                   },
                 ),
@@ -93,7 +93,7 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.pushReplacementNamed(
                       context,
                       AppRoutes.home,
-                      arguments: 2, // Wishlist tab
+                      arguments: 2, 
                     );
                   },
                 ),
@@ -106,7 +106,7 @@ class CustomDrawer extends StatelessWidget {
                     Navigator.pushReplacementNamed(
                       context,
                       AppRoutes.home,
-                      arguments: 3, // Cart tab
+                      arguments: 3, 
                     );
                   },
                 ),
@@ -125,7 +125,7 @@ class CustomDrawer extends StatelessWidget {
 
                 const Divider(height: 32, indent: 8, endIndent: 8),
 
-                // Theme Mode Switcher Inside Drawer
+                
                 ValueListenableBuilder<ThemeMode>(
                   valueListenable: themeNotifier,
                   builder: (_, mode, __) {
@@ -153,17 +153,17 @@ class CustomDrawer extends StatelessWidget {
             ),
           ),
 
-          // Drawer Footer Section
+          
           SafeArea(
             top: false,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // Button to Admin Dashboard
+                  
                   OutlinedButton.icon(
                     onPressed: () {
-                      Navigator.pop(context); // Close Drawer
+                      Navigator.pop(context); 
                       Navigator.pushNamed(context, AppRoutes.adminLogin);
                     },
                     icon: const Icon(Icons.admin_panel_settings_outlined, size: 20),
@@ -176,7 +176,7 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Log Out Button
+                  
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);

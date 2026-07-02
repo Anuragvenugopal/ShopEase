@@ -25,7 +25,7 @@ class DummyProduct {
   final String sku;
   final String barcode;
   int stock;
-  int quantity; // helper for cart
+  int quantity; 
 
   DummyProduct({
     required this.id,
@@ -47,7 +47,7 @@ class DummyProduct {
 class DummyData {
   DummyData._();
 
-  // In-memory collections to support real-time state changes during testing
+  
   static final List<DummyCategory> categories = [
     const DummyCategory(
       id: 'cat1',
@@ -118,7 +118,7 @@ class DummyData {
       category: 'Fashion',
       sku: 'FAS-LJ-381',
       barcode: '712950381042',
-      stock: 4, // Low stock category
+      stock: 4, 
     ),
     DummyProduct(
       id: 'p3',
@@ -145,7 +145,7 @@ class DummyData {
       category: 'Electronics',
       sku: 'ELE-SW-512',
       barcode: '889000512192',
-      stock: 2, // Low stock
+      stock: 2, 
     ),
     DummyProduct(
       id: 'p5',
@@ -184,7 +184,7 @@ class DummyData {
       category: 'Fashion',
       sku: 'FAS-HD-091',
       barcode: '745000091880',
-      stock: 3, // Low stock
+      stock: 3, 
     ),
     DummyProduct(
       id: 'p8',
@@ -281,7 +281,7 @@ class DummyData {
       barcode: '801234567006',
       stock: 25,
     ),
-    // Accessories products
+    
     DummyProduct(
       id: 'p15',
       title: 'Genuine Leather Bifold Wallet',
@@ -365,7 +365,7 @@ class DummyData {
       stock: 80,
     ),
 
-    // ── Shoes ─────────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p21',
       title: 'Men\'s Classic Running Sneakers',
@@ -422,7 +422,7 @@ class DummyData {
       stock: 18,
     ),
 
-    // ── Fashion ───────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p25',
       title: 'Slim-Fit Chino Trousers',
@@ -479,7 +479,7 @@ class DummyData {
       stock: 25,
     ),
 
-    // ── Electronics ───────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p29',
       title: 'True Wireless Earbuds ANC Pro',
@@ -550,7 +550,7 @@ class DummyData {
       stock: 80,
     ),
 
-    // ── Beauty ────────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p34',
       title: 'Vitamin C Brightening Moisturiser',
@@ -593,7 +593,7 @@ class DummyData {
       stock: 90,
     ),
 
-    // ── Sports ────────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p37',
       title: 'Adjustable Dumbbell Set 5–25kg',
@@ -651,7 +651,7 @@ class DummyData {
       stock: 30,
     ),
 
-    // ── Home Decor ────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p41',
       title: 'Nordic Rattan Pendant Light',
@@ -694,7 +694,7 @@ class DummyData {
       stock: 65,
     ),
 
-    // ── Groceries ─────────────────────────────────────────────────────────────
+    
     DummyProduct(
       id: 'p44',
       title: 'Cold-Pressed Green Juice Blend 6-Pack',
@@ -728,10 +728,10 @@ class DummyData {
   static final List<DummyProduct> cart = [];
   static final List<DummyProduct> wishlist = [];
 
-  // Theme configuration listeners (can be triggered by users)
+  
   static final ValueNotifier<bool> isDarkNotification = ValueNotifier(false);
 
-  // Helper functions to interact with lists
+  
   static void addToCart(DummyProduct product) {
     final index = cart.indexWhere((item) => item.id == product.id);
     if (index != -1) {
