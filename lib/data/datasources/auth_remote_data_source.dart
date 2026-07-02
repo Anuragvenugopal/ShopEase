@@ -38,8 +38,47 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithEmail(String email, String password) async {
     try {
+      String emailToUse = email.trim();
+      if (!emailToUse.contains('@')) {
+        // Treat as username or full name
+        final querySnap = await _firestore
+            .collection('users')
+            .where('displayName', isEqualTo: emailToUse)
+            .get();
+            
+        if (querySnap.docs.isNotEmpty) {
+          final data = querySnap.docs.first.data();
+          final userEmail = data['email'] as String?;
+          if (userEmail != null && userEmail.isNotEmpty) {
+            emailToUse = userEmail;
+          }
+        } else {
+          // Try case-insensitive lookup
+          final allUsersSnap = await _firestore.collection('users').get();
+          if (allUsersSnap.docs.isNotEmpty) {
+            try {
+              final matchingDoc = allUsersSnap.docs.firstWhere(
+                (doc) {
+                  final name = (doc.data()['displayName'] as String? ?? '').toLowerCase();
+                  return name == emailToUse.toLowerCase();
+                },
+              );
+              final userEmail = matchingDoc.data()['email'] as String?;
+              if (userEmail != null && userEmail.isNotEmpty) {
+                emailToUse = userEmail;
+              }
+            } catch (_) {
+              // Fallback
+              emailToUse = '$emailToUse@shopease.com';
+            }
+          } else {
+            emailToUse = '$emailToUse@shopease.com';
+          }
+        }
+      }
+
       final credential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
+        email: emailToUse,
         password: password,
       );
       final user = credential.user!;
@@ -48,7 +87,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel(
         id: user.uid,
-        email: user.email ?? email,
+        email: user.email ?? emailToUse,
         displayName: user.displayName,
         photoUrl: user.photoURL,
         phoneNumber: user.phoneNumber,

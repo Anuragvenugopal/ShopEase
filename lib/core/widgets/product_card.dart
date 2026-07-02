@@ -17,6 +17,7 @@ class ProductCard extends StatefulWidget {
   final ValueChanged<bool>? onWishlistToggle;
   final bool initialIsWishlisted;
   final int cartQuantity;
+  final int? offerPercentage; // sourced directly from Firebase
 
   const ProductCard({
     super.key,
@@ -34,6 +35,7 @@ class ProductCard extends StatefulWidget {
     this.onWishlistToggle,
     this.initialIsWishlisted = false,
     this.cartQuantity = 0,
+    this.offerPercentage,
   });
 
   @override
@@ -63,16 +65,30 @@ class _ProductCardState extends State<ProductCard>
   }
 
   @override
+  void didUpdateWidget(covariant ProductCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync local wishlist state whenever the BLoC-driven prop changes
+    if (oldWidget.initialIsWishlisted != widget.initialIsWishlisted) {
+      setState(() {
+        _isWishlisted = widget.initialIsWishlisted;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _wishlistAnimationController.dispose();
     super.dispose();
   }
 
   void _toggleWishlist() {
+    // Capture the OLD state before toggling so the callback
+    // correctly tells the BLoC whether the item WAS wishlisted.
+    final wasWishlisted = _isWishlisted;
     setState(() {
       _isWishlisted = !_isWishlisted;
     });
-    widget.onWishlistToggle?.call(_isWishlisted);
+    widget.onWishlistToggle?.call(wasWishlisted);
     _wishlistAnimationController.forward().then((_) {
       _wishlistAnimationController.reverse();
     });
@@ -83,11 +99,11 @@ class _ProductCardState extends State<ProductCard>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final discountPercent = widget.originalPrice != null
-        ? (((widget.originalPrice! - widget.price) / widget.originalPrice!) *
-                  100)
-              .round()
-        : 0;
+    // Use Firebase-sourced offerPercentage; fall back to local calc for old docs
+    final discountPercent = widget.offerPercentage ??
+        (widget.originalPrice != null
+            ? (((widget.originalPrice! - widget.price) / widget.originalPrice!) * 100).round()
+            : 0);
 
     return GestureDetector(
       onTap: widget.onTap,

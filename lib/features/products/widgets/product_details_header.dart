@@ -13,9 +13,11 @@ class ProductDetailsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final discountPercent = product.originalPrice != null
-        ? (((product.originalPrice! - product.price) / product.originalPrice!) * 100).round()
-        : 0;
+    // Use Firebase-sourced offerPercentage; fall back to local calc for old docs
+    final discountPercent = product.offerPercentage ??
+        (product.originalPrice != null
+            ? (((product.originalPrice! - product.price) / product.originalPrice!) * 100).round()
+            : 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

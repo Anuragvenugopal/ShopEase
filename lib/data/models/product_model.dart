@@ -20,17 +20,11 @@ class ReviewModel {
 
   Map<String, dynamic> toJson() => _$ReviewModelToJson(this);
 
-  ReviewEntity toEntity() => ReviewEntity(
-        name: name,
-        rating: rating,
-        text: text,
-      );
+  ReviewEntity toEntity() =>
+      ReviewEntity(name: name, rating: rating, text: text);
 
-  factory ReviewModel.fromEntity(ReviewEntity entity) => ReviewModel(
-        name: entity.name,
-        rating: entity.rating,
-        text: entity.text,
-      );
+  factory ReviewModel.fromEntity(ReviewEntity entity) =>
+      ReviewModel(name: entity.name, rating: entity.rating, text: entity.text);
 }
 
 @JsonSerializable()
@@ -41,13 +35,16 @@ class ProductModel {
   final String imageUrl;
   final double price;
   final double? originalPrice;
+  final int? offerPercentage;
   final double rating;
   final int reviewsCount;
   final String category;
+  final String subcategory;
   final String sku;
   final String barcode;
   final int stock;
   final List<ReviewModel> reviews;
+  final bool isActive;
 
   const ProductModel({
     required this.id,
@@ -56,13 +53,16 @@ class ProductModel {
     required this.imageUrl,
     required this.price,
     this.originalPrice,
+    this.offerPercentage,
     required this.rating,
     required this.reviewsCount,
     required this.category,
+    this.subcategory = '',
     required this.sku,
     required this.barcode,
     required this.stock,
     this.reviews = const [],
+    this.isActive = true,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) =>
@@ -77,13 +77,16 @@ class ProductModel {
         imageUrl: imageUrl,
         price: price,
         originalPrice: originalPrice,
+        offerPercentage: offerPercentage,
         rating: rating,
         reviewsCount: reviewsCount,
         category: category,
+        subcategory: subcategory,
         sku: sku,
         barcode: barcode,
         stock: stock,
         reviews: reviews.map((r) => r.toEntity()).toList(),
+        isActive: isActive,
       );
 
   factory ProductModel.fromEntity(ProductEntity entity) => ProductModel(
@@ -93,12 +96,15 @@ class ProductModel {
         imageUrl: entity.imageUrl,
         price: entity.price,
         originalPrice: entity.originalPrice,
+        offerPercentage: entity.offerPercentage,
         rating: entity.rating,
         reviewsCount: entity.reviewsCount,
         category: entity.category,
+        subcategory: entity.subcategory,
         sku: entity.sku,
         barcode: entity.barcode,
         stock: entity.stock,
         reviews: entity.reviews.map((r) => ReviewModel.fromEntity(r)).toList(),
+        isActive: entity.isActive,
       );
 }

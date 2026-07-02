@@ -379,14 +379,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         groupValue: _selectedPaymentMethod,
         title: Row(
           children: [
-            Icon(icon, color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onBackground.withOpacity(0.6)),
-            const SizedBox(width: 12),
-            AppText(title, variant: AppTextVariant.bodyLarge, bold: true, fontSize: 15),
+            Icon(icon,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface.withOpacity(0.6),
+                size: 20),
+            const SizedBox(width: 10),
+            Flexible(
+              child: AppText(
+                title,
+                variant: AppTextVariant.bodyLarge,
+                bold: true,
+                fontSize: 14,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: AppText(subtitle, variant: AppTextVariant.bodyMedium, fontSize: 12),
+          padding: const EdgeInsets.only(top: 3.0),
+          child: AppText(
+            subtitle,
+            variant: AppTextVariant.bodyMedium,
+            fontSize: 12,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         onChanged: (val) {
           if (val != null) {
@@ -436,12 +455,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(title, variant: AppTextVariant.titleMedium, fontSize: 15, bold: true),
+                AppText(
+                  title,
+                  variant: AppTextVariant.titleMedium,
+                  fontSize: 15,
+                  bold: true,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 6),
                 ...details.map(
                   (d) => Padding(
                     padding: const EdgeInsets.only(top: 2.0),
-                    child: AppText(d, variant: AppTextVariant.bodyMedium, fontSize: 13),
+                    child: AppText(
+                      d,
+                      variant: AppTextVariant.bodyMedium,
+                      fontSize: 13,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],
@@ -455,9 +487,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildRow(String label, String value, ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AppText(label, variant: AppTextVariant.bodyMedium, fontSize: 13),
-        AppText(value, variant: AppTextVariant.bodyMedium, bold: true, fontSize: 13),
+        Flexible(
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodyMedium,
+            fontSize: 13,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
+        AppText(
+          value,
+          variant: AppTextVariant.bodyMedium,
+          bold: true,
+          fontSize: 13,
+        ),
       ],
     );
   }

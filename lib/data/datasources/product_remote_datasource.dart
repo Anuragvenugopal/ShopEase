@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:injectable/injectable.dart';
 import '../../core/constants/dummy_data.dart';
 import '../models/product_model.dart';
@@ -13,12 +14,20 @@ class ProductRemoteDataSource {
     // Seed categories if not yet created
     final catSnapshot = await _firestore.collection('categories').get();
     if (catSnapshot.docs.isEmpty) {
+      final Map<String, List<String>> initialSubs = {
+        'Fashion': ['Men\'s Wear', 'Women\'s Wear', 'Kids', 'Footwear'],
+        'Electronics': ['Smartphones', 'Laptops', 'Audio Headphones', 'Smart Watches'],
+        'Home Decor': ['Vases', 'Wall Mirrors', 'Lamps', 'Clocks'],
+        'Beauty': ['Skin Care', 'Make Up', 'Hair Care', 'Perfumes'],
+        'Sports': ['Rackets', 'Gym Gear', 'Footballs', 'Dumbbells'],
+      };
       for (final cat in DummyData.categories) {
         final docRef = _firestore.collection('categories').doc();
         await docRef.set({
           'id': docRef.id,
           'name': cat.title,
           'imageUrl': cat.imageUrl,
+          'subcategories': initialSubs[cat.title] ?? [],
           'timestamp': FieldValue.serverTimestamp(),
         });
       }
@@ -42,6 +51,9 @@ class ProductRemoteDataSource {
           'imageUrl': p.imageUrl,
           'price': p.price,
           'originalPrice': p.originalPrice,
+          'offerPercentage': p.originalPrice != null
+              ? (((p.originalPrice! - p.price) / p.originalPrice!) * 100).round()
+              : null,
           'rating': p.rating,
           'reviewsCount': p.reviewsCount,
           'category': p.category,
@@ -123,12 +135,14 @@ class ProductRemoteDataSource {
       'imageUrl': product.imageUrl,
       'price': product.price,
       'originalPrice': product.originalPrice,
+      'offerPercentage': product.offerPercentage,
       'rating': product.rating,
       'reviewsCount': product.reviewsCount,
       'category': product.category,
       'sku': product.sku,
       'barcode': product.barcode,
       'stock': product.stock,
+      'isActive': product.isActive,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
@@ -140,16 +154,40 @@ class ProductRemoteDataSource {
       'imageUrl': product.imageUrl,
       'price': product.price,
       'originalPrice': product.originalPrice,
+      'offerPercentage': product.offerPercentage,
       'rating': product.rating,
       'reviewsCount': product.reviewsCount,
       'category': product.category,
       'sku': product.sku,
       'barcode': product.barcode,
       'stock': product.stock,
+      'isActive': product.isActive,
     });
   }
 
+  Future<void> toggleProductActive(String id, bool isActive) async {
+    await _firestore
+        .collection('products')
+        .doc(id)
+        .update({'isActive': isActive});
+  }
+
   Future<void> deleteProduct(String id) async {
+    try {
+      final doc = await _firestore.collection('products').doc(id).get();
+      if (doc.exists) {
+        final data = doc.data();
+        final String? imageUrl = data?['imageUrl'] as String?;
+        if (imageUrl != null && imageUrl.contains('firebasestorage.googleapis.com')) {
+          try {
+            final storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+            await storageRef.delete();
+          } catch (e) {
+            // Ignore/log storage deletion errors if the image doesn't exist
+          }
+        }
+      }
+    } catch (_) {}
     await _firestore.collection('products').doc(id).delete();
   }
 }

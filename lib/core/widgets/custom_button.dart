@@ -87,7 +87,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
                           : (widget.backgroundColor ?? theme.colorScheme.primary),
                       width: 1.5,
                     ),
-                    padding: widget.width != null ? EdgeInsets.zero : null,
+                    padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -102,7 +102,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
                     disabledBackgroundColor: theme.disabledColor.withOpacity(0.12),
                     disabledForegroundColor: theme.disabledColor.withOpacity(0.38),
                     shadowColor: Colors.transparent,
-                    padding: widget.width != null ? EdgeInsets.zero : null,
+                    padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -129,8 +129,10 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
     if (widget.icon != null) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(widget.icon, size: 20, color: textColor),
+          Icon(widget.icon, size: widget.fontSize + 2, color: textColor),
           const SizedBox(width: 8),
           Text(
             widget.text,
@@ -138,6 +140,7 @@ class _CustomButtonState extends State<CustomButton> with SingleTickerProviderSt
               color: textColor,
               fontSize: widget.fontSize,
               fontWeight: FontWeight.bold,
+              height: 1.0,
             ),
           ),
         ],

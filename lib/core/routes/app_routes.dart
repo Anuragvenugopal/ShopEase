@@ -28,6 +28,7 @@ import '../../features/admin/admin_orders_screen.dart';
 import '../../features/admin/admin_low_stock_screen.dart';
 import '../../features/admin/admin_barcode_scanner_screen.dart';
 import '../../features/admin/admin_sku_search_screen.dart';
+import '../../features/admin/admin_users_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -62,6 +63,7 @@ class AppRoutes {
   static const String adminLowStock = '/admin-low-stock';
   static const String adminBarcodeScanner = '/admin-barcode-scanner';
   static const String adminSkuSearch = '/admin-sku-search';
+  static const String adminUsers = '/admin-users';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -107,7 +109,7 @@ class AppRoutes {
       case adminDashboard:
         return _buildRoute(const AdminDashboardScreen(), settings);
       case adminProductList:
-        return _buildRoute(const AdminProductListScreen(), settings);
+        return _buildRoute(AdminProductListScreen(), settings);
       case adminAddProduct:
         return _buildRoute(const AdminAddProductScreen(), settings);
       case adminEditProduct:
@@ -122,7 +124,9 @@ class AppRoutes {
       case adminBarcodeScanner:
         return _buildRoute(const AdminBarcodeScannerScreen(), settings);
       case adminSkuSearch:
-        return _buildRoute(const AdminSkuSearchScreen(), settings);
+        return _buildRoute(AdminSkuSearchScreen(), settings);
+      case adminUsers:
+        return _buildRoute(const AdminUsersScreen(), settings);
       default:
         return _buildRoute(
           Scaffold(

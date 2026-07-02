@@ -26,9 +26,11 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
   imageUrl: json['imageUrl'] as String,
   price: (json['price'] as num).toDouble(),
   originalPrice: (json['originalPrice'] as num?)?.toDouble(),
+  offerPercentage: (json['offerPercentage'] as num?)?.toInt(),
   rating: (json['rating'] as num).toDouble(),
   reviewsCount: (json['reviewsCount'] as num).toInt(),
   category: json['category'] as String,
+  subcategory: json['subcategory'] as String? ?? '',
   sku: json['sku'] as String,
   barcode: json['barcode'] as String,
   stock: (json['stock'] as num).toInt(),
@@ -37,6 +39,7 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
           ?.map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  isActive: json['isActive'] as bool? ?? true,
 );
 
 Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
@@ -47,11 +50,14 @@ Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
       'imageUrl': instance.imageUrl,
       'price': instance.price,
       'originalPrice': instance.originalPrice,
+      'offerPercentage': instance.offerPercentage,
       'rating': instance.rating,
       'reviewsCount': instance.reviewsCount,
       'category': instance.category,
+      'subcategory': instance.subcategory,
       'sku': instance.sku,
       'barcode': instance.barcode,
       'stock': instance.stock,
       'reviews': instance.reviews,
+      'isActive': instance.isActive,
     };

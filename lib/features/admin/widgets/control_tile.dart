@@ -5,7 +5,7 @@ class ControlTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final int badgeCount;
+  final int? badgeCount;
 
   const ControlTile({
     super.key,
@@ -13,7 +13,7 @@ class ControlTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.badgeCount = 0,
+    this.badgeCount,
   });
 
   @override
@@ -53,7 +53,7 @@ class ControlTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (badgeCount > 0)
+            if (badgeCount != null && badgeCount! > 0)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

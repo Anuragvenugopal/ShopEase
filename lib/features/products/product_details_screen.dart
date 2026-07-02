@@ -48,7 +48,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
     CustomToast.show(
       context,
-      !isWishlisted ? 'Added to Wishlist!' : 'Removed from Wishlist',
+      isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist!',
     );
   }
 
@@ -321,6 +321,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             vertical: 8,
                           ),
                           children: [
+                            SpecRow(
+                              label: 'Category',
+                              value: currentProduct.category,
+                            ),
                             SpecRow(
                               label: 'SKU Code',
                               value: currentProduct.sku,

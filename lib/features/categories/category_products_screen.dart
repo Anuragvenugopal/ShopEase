@@ -47,14 +47,19 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     final productState = context.watch<ProductBloc>().state;
     final wishlistState = context.watch<WishlistBloc>().state;
 
-    final List<ProductEntity> allProducts =
-        productState is ProductsLoaded ? productState.products : [];
+    final List<ProductEntity> allProducts = productState is ProductsLoaded
+        ? productState.products
+        : [];
     final Set<String> wishlistedIds = wishlistState is WishlistLoaded
         ? wishlistState.wishlistedIds
         : <String>{};
 
     final filteredProducts = allProducts
-        .where((p) => p.category.toLowerCase() == widget.categoryName.toLowerCase())
+        .where(
+          (p) =>
+              p.category.toLowerCase() == widget.categoryName.toLowerCase() &&
+              p.isActive,
+        )
         .toList();
 
     // Sort products
@@ -67,10 +72,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     }
 
     return Scaffold(
-      appBar: CustomAppBar(
-        title: widget.categoryName,
-        showBackButton: true,
-      ),
+      appBar: CustomAppBar(title: widget.categoryName, showBackButton: true),
       body: Column(
         children: [
           // Filter Sub-header
@@ -102,9 +104,18 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   underline: const SizedBox(),
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   items: const [
-                    DropdownMenuItem(value: 'Popular', child: Text('Popularity')),
-                    DropdownMenuItem(value: 'LowToHigh', child: Text('Price: Low to High')),
-                    DropdownMenuItem(value: 'HighToLow', child: Text('Price: High to Low')),
+                    DropdownMenuItem(
+                      value: 'Popular',
+                      child: Text('Popularity'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'LowToHigh',
+                      child: Text('Price: Low to High'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'HighToLow',
+                      child: Text('Price: High to Low'),
+                    ),
                   ],
                   onChanged: (val) {
                     if (val != null) _changeSort(val);
@@ -140,14 +151,16 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         itemCount: filteredProducts.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.50,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.65,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
                         itemBuilder: (context, index) {
                           final product = filteredProducts[index];
-                          final isWishlisted = wishlistedIds.contains(product.id);
+                          final isWishlisted = wishlistedIds.contains(
+                            product.id,
+                          );
                           final cartQty = cartQuantityMap[product.id] ?? 0;
 
                           return ProductCard(
@@ -156,6 +169,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                             imageUrl: product.imageUrl,
                             price: product.price,
                             originalPrice: product.originalPrice,
+                            offerPercentage: product.offerPercentage,
                             rating: product.rating,
                             reviewsCount: product.reviewsCount,
                             initialIsWishlisted: isWishlisted,
@@ -167,47 +181,57 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                                 arguments: product.id,
                               );
                             },
-                            onWishlistToggle: (wishlisted) {
+                            onWishlistToggle: (wasWishlisted) {
                               if (userId.isNotEmpty) {
                                 context.read<WishlistBloc>().add(
-                                      ToggleWishlist(
-                                          userId, product.id, !wishlisted),
-                                    );
+                                  ToggleWishlist(
+                                    userId,
+                                    product.id,
+                                    wasWishlisted,
+                                  ),
+                                );
                               }
                             },
                             onAddToCart: () {
                               if (userId.isNotEmpty) {
                                 context.read<CartBloc>().add(
-                                      AddToCart(
-                                        userId,
-                                        CartItemEntity(
-                                          productId: product.id,
-                                          title: product.title,
-                                          imageUrl: product.imageUrl,
-                                          price: product.price,
-                                          quantity: 1,
-                                        ),
-                                      ),
-                                    );
-                                CustomToast.show(context,
-                                    '${product.title} added to Cart!');
+                                  AddToCart(
+                                    userId,
+                                    CartItemEntity(
+                                      productId: product.id,
+                                      title: product.title,
+                                      imageUrl: product.imageUrl,
+                                      price: product.price,
+                                      quantity: 1,
+                                    ),
+                                  ),
+                                );
+                                CustomToast.show(
+                                  context,
+                                  '${product.title} added to Cart!',
+                                );
                               }
                             },
                             onRemoveFromCart: () {
                               if (userId.isNotEmpty) {
                                 context.read<CartBloc>().add(
-                                      RemoveFromCart(userId, product.id),
-                                    );
-                                CustomToast.show(context,
-                                    '${product.title} removed from Cart');
+                                  RemoveFromCart(userId, product.id),
+                                );
+                                CustomToast.show(
+                                  context,
+                                  '${product.title} removed from Cart',
+                                );
                               }
                             },
                             onUpdateQuantity: (newQty) {
                               if (userId.isNotEmpty) {
                                 context.read<CartBloc>().add(
-                                      UpdateCartQuantity(
-                                          userId, product.id, newQty),
-                                    );
+                                  UpdateCartQuantity(
+                                    userId,
+                                    product.id,
+                                    newQty,
+                                  ),
+                                );
                               }
                             },
                           );

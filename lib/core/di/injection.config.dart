@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
+import '../../data/datasources/admin_stats_datasource.dart' as _i271;
 import '../../data/datasources/auth_remote_data_source.dart' as _i716;
 import '../../data/datasources/cart_remote_datasource.dart' as _i343;
 import '../../data/datasources/order_remote_datasource.dart' as _i1004;
@@ -31,6 +32,7 @@ import '../../domain/repositories/cart_repository.dart' as _i46;
 import '../../domain/repositories/order_repository.dart' as _i507;
 import '../../domain/repositories/product_repository.dart' as _i933;
 import '../../domain/repositories/wishlist_repository.dart' as _i581;
+import '../../presentation/blocs/admin_stats/admin_stats_bloc.dart' as _i136;
 import '../../presentation/blocs/auth/auth_bloc.dart' as _i141;
 import '../../presentation/blocs/cart/cart_bloc.dart' as _i902;
 import '../../presentation/blocs/order/order_bloc.dart' as _i25;
@@ -54,6 +56,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i974.FirebaseFirestore>(() => registerModule.firestore);
     gh.lazySingleton<_i457.FirebaseStorage>(
       () => registerModule.firebaseStorage,
+    );
+    gh.factory<_i271.AdminStatsDataSource>(
+      () => _i271.AdminStatsDataSource(gh<_i974.FirebaseFirestore>()),
     );
     gh.factory<_i343.CartRemoteDataSource>(
       () => _i343.CartRemoteDataSource(gh<_i974.FirebaseFirestore>()),
@@ -87,6 +92,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i507.OrderRepository>(),
         gh<_i46.CartRepository>(),
       ),
+    );
+    gh.factory<_i136.AdminStatsBloc>(
+      () => _i136.AdminStatsBloc(gh<_i271.AdminStatsDataSource>()),
     );
     gh.factory<_i581.WishlistRepository>(
       () => _i800.WishlistRepositoryImpl(

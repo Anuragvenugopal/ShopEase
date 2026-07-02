@@ -41,7 +41,7 @@ class _SearchScreenState extends State<SearchScreen> {
     'Fashion',
     'Beauty',
     'Sports',
-    'Decor'
+    'Decor',
   ];
 
   @override
@@ -76,18 +76,27 @@ class _SearchScreenState extends State<SearchScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Category Filter Dropdown
-              const AppText('Category',
-                  variant: AppTextVariant.titleMedium, bold: true),
+              const AppText(
+                'Category',
+                variant: AppTextVariant.titleMedium,
+                bold: true,
+              ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                ),
                 items: ['All', ...categories]
-                    .map((cat) => DropdownMenuItem(
+                    .map(
+                      (cat) => DropdownMenuItem(
                         value: cat,
-                        child: AppText(cat, variant: AppTextVariant.bodyMedium)))
+                        child: AppText(cat, variant: AppTextVariant.bodyMedium),
+                      ),
+                    )
                     .toList(),
                 onChanged: (val) {
                   if (val != null) {
@@ -111,8 +120,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 max: 500,
                 divisions: 50,
                 activeColor: sheetTheme.colorScheme.primary,
-                labels: RangeLabels('₹${_priceRange.start.round()}',
-                    '₹${_priceRange.end.round()}'),
+                labels: RangeLabels(
+                  '₹${_priceRange.start.round()}',
+                  '₹${_priceRange.end.round()}',
+                ),
                 onChanged: (val) {
                   setSheetState(() => _priceRange = val);
                   setState(() => _priceRange = val);
@@ -145,10 +156,12 @@ class _SearchScreenState extends State<SearchScreen> {
               // Done Button
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const AppText('Apply Filters',
-                    variant: AppTextVariant.bodyLarge,
-                    bold: true,
-                    color: Colors.white),
+                child: const AppText(
+                  'Apply Filters',
+                  variant: AppTextVariant.bodyLarge,
+                  bold: true,
+                  color: Colors.white,
+                ),
               ),
             ],
           );
@@ -168,29 +181,38 @@ class _SearchScreenState extends State<SearchScreen> {
     final productState = context.watch<ProductBloc>().state;
     final wishlistState = context.watch<WishlistBloc>().state;
 
-    final List<ProductEntity> allProducts =
-        productState is ProductsLoaded ? productState.products : [];
+    final List<ProductEntity> allProducts = productState is ProductsLoaded
+        ? productState.products
+        : [];
     final Set<String> wishlistedIds = wishlistState is WishlistLoaded
         ? wishlistState.wishlistedIds
         : <String>{};
 
-    final List<String> categories =
-        allProducts.map((p) => p.category).toSet().toList();
+    final List<String> categories = allProducts
+        .map((p) => p.category)
+        .toSet()
+        .toList();
 
     final query = _searchController.text.trim().toLowerCase();
     final bool isSearching = query.isNotEmpty;
 
     final List<ProductEntity> searchResults = isSearching
         ? allProducts.where((product) {
-            final matchesQuery = product.title.toLowerCase().contains(query) ||
-                product.description.toLowerCase().contains(query);
-            final matchesCategory = _selectedCategory == 'All' ||
+            final matchesQuery =
+                product.title.toLowerCase().contains(query) ||
+                product.description.toLowerCase().contains(query) ||
+                product.sku.toLowerCase().contains(query) ||
+                product.barcode.toLowerCase().contains(query);
+            final matchesCategory =
+                _selectedCategory == 'All' ||
                 product.category == _selectedCategory;
-            final matchesPrice = product.price >= _priceRange.start &&
+            final matchesPrice =
+                product.price >= _priceRange.start &&
                 product.price <= _priceRange.end;
             final matchesRating = product.rating >= _minRating;
 
-            return matchesQuery &&
+            return product.isActive &&
+                matchesQuery &&
                 matchesCategory &&
                 matchesPrice &&
                 matchesRating;
@@ -199,8 +221,11 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppText('Search Catalog',
-            variant: AppTextVariant.titleLarge, bold: true),
+        title: const AppText(
+          'Search Catalog',
+          variant: AppTextVariant.titleLarge,
+          bold: true,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -211,8 +236,10 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             // Search Input textfield
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -246,8 +273,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.tune_rounded,
-                          color: theme.colorScheme.primary),
+                      icon: Icon(
+                        Icons.tune_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
                       onPressed: () => _openFiltersSheet(categories),
                     ),
                   ),
@@ -275,14 +304,17 @@ class _SearchScreenState extends State<SearchScreen> {
                               spacing: 10,
                               children: _recentSearches.map((term) {
                                 return ActionChip(
-                                  label: AppText(term,
-                                      variant: AppTextVariant.bodyMedium),
+                                  label: AppText(
+                                    term,
+                                    variant: AppTextVariant.bodyMedium,
+                                  ),
                                   onPressed: () => _triggerSearch(term),
                                   backgroundColor: isDark
                                       ? const Color(0xFF1E293B)
                                       : Colors.white,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 );
                               }).toList(),
                             ),
@@ -301,8 +333,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             runSpacing: 10,
                             children: _popularTags.map((tag) {
                               return ActionChip(
-                                label: AppText(tag,
-                                    variant: AppTextVariant.bodyMedium),
+                                label: AppText(
+                                  tag,
+                                  variant: AppTextVariant.bodyMedium,
+                                ),
                                 onPressed: () {
                                   Navigator.pushNamed(
                                     context,
@@ -314,7 +348,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                     ? const Color(0xFF1E293B)
                                     : Colors.white,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               );
                             }).toList(),
                           ),
@@ -322,72 +357,77 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     )
                   : searchResults.isEmpty
-                      ? const EmptyState(
-                          icon: Icons.find_in_page_outlined,
-                          title: 'No Matches Found',
-                          description:
-                              'We couldn\'t find any matches. Try modifying keywords or adjusting filters.',
-                        )
-                      : GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: searchResults.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                  ? const EmptyState(
+                      icon: Icons.find_in_page_outlined,
+                      title: 'No Matches Found',
+                      description:
+                          'We couldn\'t find any matches. Try modifying keywords or adjusting filters.',
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: searchResults.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             childAspectRatio: 0.50,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                           ),
-                          itemBuilder: (context, index) {
-                            final product = searchResults[index];
-                            final isWishlisted =
-                                wishlistedIds.contains(product.id);
+                      itemBuilder: (context, index) {
+                        final product = searchResults[index];
+                        final isWishlisted = wishlistedIds.contains(product.id);
 
-                            return ProductCard(
-                              id: product.id,
-                              title: product.title,
-                              imageUrl: product.imageUrl,
-                              price: product.price,
-                              originalPrice: product.originalPrice,
-                              rating: product.rating,
-                              reviewsCount: product.reviewsCount,
-                              initialIsWishlisted: isWishlisted,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.productDetails,
-                                  arguments: product.id,
-                                );
-                              },
-                              onWishlistToggle: (wishlisted) {
-                                if (userId.isNotEmpty) {
-                                  context.read<WishlistBloc>().add(
-                                        ToggleWishlist(
-                                            userId, product.id, !wishlisted),
-                                      );
-                                }
-                              },
-                              onAddToCart: () {
-                                if (userId.isNotEmpty) {
-                                  context.read<CartBloc>().add(
-                                        AddToCart(
-                                          userId,
-                                          CartItemEntity(
-                                            productId: product.id,
-                                            title: product.title,
-                                            imageUrl: product.imageUrl,
-                                            price: product.price,
-                                            quantity: 1,
-                                          ),
-                                        ),
-                                      );
-                                  CustomToast.show(context,
-                                      '${product.title} added to Cart!');
-                                }
-                              },
+                        return ProductCard(
+                          id: product.id,
+                          title: product.title,
+                          imageUrl: product.imageUrl,
+                          price: product.price,
+                          originalPrice: product.originalPrice,
+                          offerPercentage: product.offerPercentage,
+                          rating: product.rating,
+                          reviewsCount: product.reviewsCount,
+                          initialIsWishlisted: isWishlisted,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.productDetails,
+                              arguments: product.id,
                             );
                           },
-                        ),
+                          onWishlistToggle: (wasWishlisted) {
+                            if (userId.isNotEmpty) {
+                              context.read<WishlistBloc>().add(
+                                ToggleWishlist(
+                                  userId,
+                                  product.id,
+                                  wasWishlisted,
+                                ),
+                              );
+                            }
+                          },
+                          onAddToCart: () {
+                            if (userId.isNotEmpty) {
+                              context.read<CartBloc>().add(
+                                AddToCart(
+                                  userId,
+                                  CartItemEntity(
+                                    productId: product.id,
+                                    title: product.title,
+                                    imageUrl: product.imageUrl,
+                                    price: product.price,
+                                    quantity: 1,
+                                  ),
+                                ),
+                              );
+                              CustomToast.show(
+                                context,
+                                '${product.title} added to Cart!',
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),

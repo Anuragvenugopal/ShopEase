@@ -34,10 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onLogin() {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-        SignInRequested(
-          _emailController.text.trim(),
-          _passwordController.text,
-        ),
+        SignInRequested(_emailController.text.trim(), _passwordController.text),
       );
     }
   }
@@ -58,7 +55,10 @@ class _LoginScreenState extends State<LoginScreen> {
         } else if (state is Authenticated) {
           CustomToast.show(context, 'Login Success');
           Navigator.pushNamedAndRemoveUntil(
-              context, AppRoutes.home, (route) => false);
+            context,
+            AppRoutes.home,
+            (route) => false,
+          );
         }
       },
       builder: (context, state) {
@@ -69,7 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
         return Scaffold(
           body: SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -82,10 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.08),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: SvgPicture.asset(
@@ -120,18 +122,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         CustomTextField(
                           controller: _emailController,
-                          labelText: 'Email Address',
-                          hintText: 'name@example.com',
+                          labelText: 'Email or Username',
+                          hintText: 'e.g. name@example.com or user123',
                           keyboardType: TextInputType.emailAddress,
-                          prefixIcon: Icons.email_outlined,
+                          prefixIcon: Icons.person_outline_rounded,
                           enabled: !isLoading,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value)) {
-                              return 'Please enter a valid email address';
+                              return 'Please enter your email or username';
                             }
                             return null;
                           },
@@ -161,10 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: isLoading ? null : () {
-                              Navigator.pushNamed(
-                                  context, AppRoutes.forgotPassword);
-                            },
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.forgotPassword,
+                                    );
+                                  },
                             child: const AppText(
                               'Forgot Password?',
                               variant: AppTextVariant.labelLarge,
@@ -188,8 +190,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: Divider(
-                              color: Theme.of(context).dividerColor)),
+                        child: Divider(color: Theme.of(context).dividerColor),
+                      ),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: AppText(
@@ -199,8 +201,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Expanded(
-                          child: Divider(
-                              color: Theme.of(context).dividerColor)),
+                        child: Divider(color: Theme.of(context).dividerColor),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -212,34 +214,76 @@ class _LoginScreenState extends State<LoginScreen> {
                       SocialButton(
                         assetPath: AppAssets.googleIcon,
                         isLoading: isGoogleLoading,
-                        onTap: isLoading ? null : () {
-                          context.read<AuthBloc>().add(GoogleSignInRequested());
-                        },
+                        onTap: isLoading
+                            ? null
+                            : () {
+                                context.read<AuthBloc>().add(
+                                  GoogleSignInRequested(),
+                                );
+                              },
                       ),
                       const SizedBox(width: 16),
                       SocialButton(
                         assetPath: AppAssets.facebookIcon,
-                        onTap: isLoading ? null : () {
-                          // Not implemented
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Facebook login not implemented')),
-                          );
-                        },
+                        onTap: isLoading
+                            ? null
+                            : () {
+                                // Not implemented
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Facebook login not implemented',
+                                    ),
+                                  ),
+                                );
+                              },
                       ),
                       const SizedBox(width: 16),
                       SocialButton(
                         assetPath: AppAssets.appleIcon,
                         iconColor: isDark ? Colors.white : Colors.black,
-                        onTap: isLoading ? null : () {
-                          // Not implemented
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Apple login not implemented')),
-                          );
-                        },
+                        onTap: isLoading
+                            ? null
+                            : () {
+                                // Not implemented
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Apple login not implemented',
+                                    ),
+                                  ),
+                                );
+                              },
                       ),
                     ],
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 16),
+                  
+                  Center(
+                    child: GestureDetector(
+                      onTap: isLoading ? null : () =>
+                          Navigator.pushNamed(context, AppRoutes.adminLogin),
+                      child: RichText(
+                        text: TextSpan(
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                          children: [
+                            const TextSpan(text: "Are you an Admin? "),
+                            TextSpan(
+                              text: "Login here",
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
                   // Register redirect
                   Row(
@@ -250,8 +294,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         variant: AppTextVariant.bodyMedium,
                       ),
                       GestureDetector(
-                        onTap: isLoading ? null : () =>
-                            Navigator.pushNamed(context, AppRoutes.register),
+                        onTap: isLoading
+                            ? null
+                            : () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.register,
+                              ),
                         child: const AppText(
                           'Sign Up',
                           variant: AppTextVariant.labelLarge,
@@ -266,11 +314,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Switch to Admin
                   Center(
                     child: TextButton.icon(
-                      onPressed: isLoading ? null : () =>
-                          Navigator.pushNamed(context, AppRoutes.adminLogin),
+                      onPressed: isLoading
+                          ? null
+                          : () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.adminLogin,
+                            ),
                       icon: const Icon(
-                          Icons.admin_panel_settings_rounded,
-                          size: 20),
+                        Icons.admin_panel_settings_rounded,
+                        size: 20,
+                      ),
                       label: const AppText(
                         'Access Admin Portal',
                         variant: AppTextVariant.labelLarge,

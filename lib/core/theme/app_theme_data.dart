@@ -76,7 +76,7 @@ class AppThemeData {
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
-          vertical: 16,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
@@ -214,7 +214,7 @@ class AppThemeData {
         fillColor: AppTheme.surfaceDark,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
-          vertical: 16,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusMedium),

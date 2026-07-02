@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_assets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_text.dart';
 import '../../presentation/blocs/auth/auth_bloc.dart';
@@ -61,16 +62,26 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
-  void _navigateBasedOnAuth() {
+  void _navigateBasedOnAuth() async {
     if (!_timerFinished) return;
     
-    final authState = context.read<AuthBloc>().state;
-    if (authState is Authenticated) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else if (authState is Unauthenticated || authState is AuthError) {
-      Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
-    } else {
-      // Still loading, wait for BlocListener to trigger
+    final prefs = await SharedPreferences.getInstance();
+    final isAdmin = prefs.getBool('isAdminLoggedIn') ?? false;
+
+    if (mounted) {
+      if (isAdmin) {
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
+        return;
+      }
+
+      final authState = context.read<AuthBloc>().state;
+      if (authState is Authenticated) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else if (authState is Unauthenticated || authState is AuthError) {
+        Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+      } else {
+        // Still loading, wait for BlocListener to trigger
+      }
     }
   }
 

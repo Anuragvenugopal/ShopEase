@@ -68,6 +68,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     imageUrl: product.imageUrl,
                     price: product.price,
                     originalPrice: product.originalPrice,
+                    offerPercentage: product.offerPercentage,
                     rating: product.rating,
                     reviewsCount: product.reviewsCount,
                     initialIsWishlisted: true,
@@ -78,10 +79,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         arguments: product.id,
                       );
                     },
-                    onWishlistToggle: (wishlisted) {
+                    onWishlistToggle: (wasWishlisted) {
                       if (userId.isNotEmpty) {
                         context.read<WishlistBloc>().add(
-                              ToggleWishlist(userId, product.id, !wishlisted),
+                              ToggleWishlist(userId, product.id, wasWishlisted),
                             );
                       }
                     },

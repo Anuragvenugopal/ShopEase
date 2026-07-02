@@ -11,6 +11,8 @@ import 'presentation/blocs/product/product_event.dart';
 import 'presentation/blocs/cart/cart_bloc.dart';
 import 'presentation/blocs/wishlist/wishlist_bloc.dart';
 import 'presentation/blocs/order/order_bloc.dart';
+import 'presentation/blocs/admin_stats/admin_stats_bloc.dart';
+import 'presentation/blocs/admin_stats/admin_stats_event.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -42,6 +44,9 @@ class ShopEaseApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => getIt<OrderBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<AdminStatsBloc>()..add(FetchAdminStats()),
         ),
       ],
       child: ValueListenableBuilder<ThemeMode>(

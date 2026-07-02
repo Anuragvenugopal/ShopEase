@@ -77,7 +77,7 @@ class TrendingProductsGrid extends StatelessWidget {
 
         // ── Products loaded ────────────────────────────────────────────────────
         if (productState is ProductsLoaded) {
-          final products = productState.products;
+          final products = productState.products.where((p) => p.isActive).toList();
           if (products.isEmpty) {
             return const Center(
               child: Padding(
@@ -126,6 +126,7 @@ class TrendingProductsGrid extends StatelessWidget {
                                 imageUrl: product.imageUrl,
                                 price: product.price,
                                 originalPrice: product.originalPrice,
+                                offerPercentage: product.offerPercentage,
                                 rating: product.rating,
                                 reviewsCount: product.reviewsCount,
                                 initialIsWishlisted: isWishlisted,
@@ -137,11 +138,11 @@ class TrendingProductsGrid extends StatelessWidget {
                                     arguments: product.id,
                                   );
                                 },
-                                onWishlistToggle: (wishlisted) {
+                                onWishlistToggle: (wasWishlisted) {
                                   if (userId.isNotEmpty) {
                                     context.read<WishlistBloc>().add(
                                           ToggleWishlist(
-                                              userId, product.id, !wishlisted),
+                                              userId, product.id, wasWishlisted),
                                         );
                                   }
                                 },

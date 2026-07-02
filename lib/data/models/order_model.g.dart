@@ -6,9 +6,6 @@ part of 'order_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-// OrderModel.fromJson is manually implemented in order_model.dart
-// to handle Firestore Timestamp correctly.
-
 OrderItemModel _$OrderItemModelFromJson(Map<String, dynamic> json) =>
     OrderItemModel(
       productId: json['productId'] as String,

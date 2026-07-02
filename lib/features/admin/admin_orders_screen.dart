@@ -1,63 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/widgets/custom_app_bar.dart';
 
-class AdminOrdersScreen extends StatefulWidget {
+class AdminOrdersScreen extends StatelessWidget {
   const AdminOrdersScreen({super.key});
 
-  @override
-  State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
-}
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const List<String> _statuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
-  // Mock Order list data
-  final List<Map<String, dynamic>> _orders = [
-    {
-      'id': 'SE-39841-02',
-      'customer': 'Jessica Doe',
-      'date': 'Jul 01, 2026',
-      'amount': 199.99,
-      'status': 'Shipped',
-      'items': 'Wireless Headphones (x1)',
-    },
-    {
-      'id': 'SE-21942-88',
-      'customer': 'Alex Johnson',
-      'date': 'Jun 29, 2026',
-      'amount': 89.00,
-      'status': 'Processing',
-      'items': 'Smart Sports Watch (x1)',
-    },
-    {
-      'id': 'SE-10294-11',
-      'customer': 'Sarah Jenkins',
-      'date': 'May 12, 2026',
-      'amount': 34.00,
-      'status': 'Delivered',
-      'items': 'Matte Ceramic Vase (x1)',
-    },
-    {
-      'id': 'SE-09412-42',
-      'customer': 'Michael Miller',
-      'date': 'Apr 02, 2026',
-      'amount': 129.50,
-      'status': 'Cancelled',
-      'items': 'Premium Leather Jacket (x1)',
-    },
-  ];
-
-  final List<String> _statuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-
-  void _updateStatus(int index, String newStatus) {
-    setState(() {
-      _orders[index]['status'] = newStatus;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Order ${_orders[index]['id']} status updated to "$newStatus"'),
-        backgroundColor: Colors.teal,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _updateStatus(BuildContext context, String docId, String newStatus) async {
+    try {
+      await _firestore.collection('orders').doc(docId).update({
+        'status': newStatus,
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Order status updated to "$newStatus"'),
+            backgroundColor: Colors.teal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update status: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Color _getStatusColor(String status, ThemeData theme) {
@@ -71,7 +46,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       case 'pending':
         return Colors.blue;
       default:
-        return theme.colorScheme.tertiary; // Cancelled
+        return theme.colorScheme.tertiary; // cancelled
     }
   }
 
@@ -86,96 +61,148 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         showBackButton: true,
       ),
       body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _orders.length,
-          itemBuilder: (context, index) {
-            final order = _orders[index];
-            final statusColor = _getStatusColor(order['status'], theme);
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _firestore.collection('orders').orderBy('createdAt', descending: true).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Text('No customer orders found.', style: theme.textTheme.bodyMedium),
+              );
+            }
+
+            final docs = snapshot.data!.docs;
+
+            return ListView.builder(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF161F30) : Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Order Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              itemCount: docs.length,
+              itemBuilder: (context, index) {
+                final doc = docs[index];
+                final data = doc.data() as Map<String, dynamic>;
+                final docId = doc.id;
+                final status = data['status'] ?? 'pending';
+                final amount = (data['totalAmount'] as num?)?.toDouble() ?? 0.0;
+                final address = data['shippingAddress'] ?? 'No Address';
+                
+                // Parse items to summary string
+                final itemsList = data['items'] as List<dynamic>? ?? [];
+                final itemsSummary = itemsList.map((item) {
+                  final title = item['title'] ?? 'Product';
+                  final qty = item['quantity'] ?? 1;
+                  return '$title (x$qty)';
+                }).join(', ');
+
+                // Parse createdAt timestamp
+                String dateStr = 'Unknown date';
+                if (data['createdAt'] != null) {
+                  final timestamp = data['createdAt'] as Timestamp;
+                  final dt = timestamp.toDate();
+                  dateStr = '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+                }
+
+                final statusColor = _getStatusColor(status, theme);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF161F30) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        order['id']!,
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          order['status']!,
-                          style: TextStyle(
-                            color: statusColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                      // Order Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'ID: $docId',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                fontFamily: 'monospace',
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              status.toString().toUpperCase(),
+                              style: TextStyle(
+                                color: statusColor,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+
+                      // Customer details
+                      _buildOrderInfoRow('Placed On', dateStr, theme),
+                      const SizedBox(height: 6),
+                      _buildOrderInfoRow('Shipping Address', address, theme),
+                      const SizedBox(height: 6),
+                      _buildOrderInfoRow('Purchased Items', itemsSummary.isEmpty ? 'No Items' : itemsSummary, theme),
+                      const SizedBox(height: 6),
+                      _buildOrderInfoRow(
+                        'Total Value',
+                        '₹${amount.toStringAsFixed(0)}',
+                        theme,
+                        isAccent: true,
+                      ),
+
+                      const Divider(height: 24),
+
+                      // Action Status Controller Dropdown
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Change Order Status:',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          DropdownButton<String>(
+                            value: _statuses.contains(status) ? status : 'pending',
+                            underline: const SizedBox(),
+                            icon: const Icon(Icons.arrow_drop_down_rounded),
+                            items: _statuses.map((stat) {
+                              return DropdownMenuItem(value: stat, child: Text(stat.toUpperCase()));
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) _updateStatus(context, docId, val);
+                            },
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const Divider(height: 24),
-
-                  // Customer Details and Info
-                  _buildOrderInfoRow('Customer', order['customer']!, theme),
-                  const SizedBox(height: 6),
-                  _buildOrderInfoRow('Placed On', order['date']!, theme),
-                  const SizedBox(height: 6),
-                  _buildOrderInfoRow('Purchased Items', order['items']!, theme),
-                  const SizedBox(height: 6),
-                  _buildOrderInfoRow(
-                    'Order Value Sum',
-                    '\$${order['amount'].toStringAsFixed(2)}',
-                    theme,
-                    isAccent: true,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Action Status Controller Dropdown
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Change Order Status:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                      DropdownButton<String>(
-                        value: _statuses.contains(order['status']) ? order['status'] : 'Pending',
-                        underline: const SizedBox(),
-                        icon: const Icon(Icons.arrow_drop_down_rounded),
-                        items: _statuses.map((stat) {
-                          return DropdownMenuItem(value: stat, child: Text(stat));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) _updateStatus(index, val);
-                        },
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             );
           },
         ),
