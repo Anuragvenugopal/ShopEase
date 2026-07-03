@@ -1,8 +1,8 @@
-import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_textfield.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
@@ -23,72 +23,69 @@ class BarcodeScannerView extends StatefulWidget {
   State<BarcodeScannerView> createState() => _BarcodeScannerViewState();
 }
 
-class _BarcodeScannerViewState extends State<BarcodeScannerView>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _laserController;
-  late Animation<double> _laserAnimation;
-  bool _flashActive = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _laserController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-
-    _laserAnimation = Tween<double>(begin: 0.05, end: 0.95).animate(
-      CurvedAnimation(parent: _laserController, curve: Curves.easeInOut),
-    );
-  }
+class _BarcodeScannerViewState extends State<BarcodeScannerView> {
+  final MobileScannerController _cameraController = MobileScannerController();
+  bool _isProcessing = false;
 
   @override
   void dispose() {
-    _laserController.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 
-  void _triggerMockScan() {
-    if (widget.loading) return;
-    if (widget.products.isEmpty) {
+  void _onDetect(BarcodeCapture capture) {
+    if (_isProcessing) return;
+    final barcodes = capture.barcodes;
+    if (barcodes.isEmpty) return;
+
+    final rawValue = barcodes.first.rawValue;
+    if (rawValue == null || rawValue.isEmpty) return;
+
+    setState(() => _isProcessing = true);
+
+    // Pause scanner while showing result
+    _cameraController.stop();
+
+    // Try to find matching product by barcode field
+    DocumentSnapshot? matchedDoc;
+    try {
+      matchedDoc = widget.products.firstWhere((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final barcode = (data['barcode'] ?? '').toString();
+        return barcode == rawValue;
+      });
+    } catch (_) {
+      matchedDoc = null;
+    }
+
+    if (matchedDoc != null) {
+      _showScannedProductSheet(matchedDoc, rawValue);
+    } else {
+      // No matching product found
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No products available in database to simulate scan!'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('No product found for barcode: $rawValue'),
+          backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => _isProcessing = false);
+          _cameraController.start();
+        }
+      });
     }
-
-    setState(() {
-      _flashActive = true;
-    });
-
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (mounted) {
-        setState(() {
-          _flashActive = false;
-        });
-
-        final rand = Random();
-        final scannedDoc =
-            widget.products[rand.nextInt(widget.products.length)];
-        _showScannedProductSheet(scannedDoc);
-      }
-    });
   }
 
-  void _showScannedProductSheet(DocumentSnapshot doc) {
+  void _showScannedProductSheet(DocumentSnapshot doc, String scannedBarcode) {
     final data = doc.data() as Map<String, dynamic>;
     final String title = data['title'] ?? '';
     final String imageUrl = data['imageUrl'] ?? '';
-    final String barcode = data['barcode'] ?? '';
+    final String barcode = data['barcode'] ?? scannedBarcode;
     final int currentStock = (data['stock'] as num?)?.toInt() ?? 0;
 
-    final stockController = TextEditingController(
-      text: currentStock.toString(),
-    );
+    final stockController = TextEditingController(text: currentStock.toString());
     final formKey = GlobalKey<FormState>();
 
     ConfirmationDialog.showActionBottomSheet(
@@ -102,7 +99,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.06),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -176,7 +173,7 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Stock count updated to $newStock for "$title"',
+                          'Stock updated to $newStock for "$title"',
                         ),
                         backgroundColor: Colors.teal,
                         behavior: SnackBarBehavior.floating,
@@ -189,65 +186,66 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
           ],
         ),
       ),
-    );
+    ).then((_) {
+      // Resume scanner when sheet is dismissed
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        _cameraController.start();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Stack(
       children: [
-        Container(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B),
-          width: double.infinity,
-          height: double.infinity,
+        // Live camera feed
+        MobileScanner(
+          controller: _cameraController,
+          onDetect: widget.loading ? null : _onDetect,
         ),
+
+        // Overlay dimming + viewfinder
+        ColorFiltered(
+          colorFilter: ColorFilter.mode(
+            Colors.black.withValues(alpha: 0.45),
+            BlendMode.srcOut,
+          ),
+          child: Stack(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  backgroundBlendMode: BlendMode.dstOut,
+                ),
+              ),
+              Center(
+                child: Container(
+                  width: 260,
+                  height: 260,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Viewfinder border
         Center(
           child: Container(
             width: 260,
             height: 260,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 2,
-              ),
+              border: Border.all(color: Colors.white, width: 2),
               borderRadius: BorderRadius.circular(24),
-            ),
-            child: Stack(
-              children: [
-                AnimatedBuilder(
-                  animation: _laserAnimation,
-                  builder: (context, child) {
-                    return Positioned(
-                      top: 260 * _laserAnimation.value,
-                      left: 10,
-                      right: 10,
-                      child: Container(
-                        height: 3,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withOpacity(0.8),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _buildCornerMarker(top: 10, left: 10),
-                _buildCornerMarker(top: 10, right: 10),
-                _buildCornerMarker(bottom: 10, left: 10),
-                _buildCornerMarker(bottom: 10, right: 10),
-              ],
             ),
           ),
         ),
+
+        // Instruction banner
         Positioned(
           top: 60,
           left: 24,
@@ -255,77 +253,31 @@ class _BarcodeScannerViewState extends State<BarcodeScannerView>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
-              'Position product barcode inside the viewfinder crosshairs to scan.',
-              style: TextStyle(color: Colors.white, fontSize: 12),
+            child: Text(
+              widget.loading
+                  ? 'Loading product database...'
+                  : 'Point the camera at a product barcode to scan.',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ),
         ),
+
+        // Flash toggle button
         Positioned(
           bottom: 48,
           left: 32,
           right: 32,
-          child: Column(
-            children: [
-              CustomButton(
-                text: widget.loading ? 'Loading Data...' : 'Simulate Code Read',
-                icon: Icons.flash_on_rounded,
-                onPressed: widget.loading ? null : _triggerMockScan,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Simulates hardware barcode scanning using live database',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 11,
-                ),
-              ),
-            ],
+          child: CustomButton(
+            text: 'Toggle Flash',
+            icon: Icons.flash_on_rounded,
+            onPressed: () => _cameraController.toggleTorch(),
           ),
         ),
-        if (_flashActive)
-          Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.85)),
-          ),
       ],
-    );
-  }
-
-  Widget _buildCornerMarker({
-    double? top,
-    double? bottom,
-    double? left,
-    double? right,
-  }) {
-    return Positioned(
-      top: top,
-      bottom: bottom,
-      left: left,
-      right: right,
-      child: Container(
-        width: 16,
-        height: 16,
-        decoration: BoxDecoration(
-          border: Border(
-            top: top != null
-                ? const BorderSide(color: Colors.white, width: 3)
-                : BorderSide.none,
-            bottom: bottom != null
-                ? const BorderSide(color: Colors.white, width: 3)
-                : BorderSide.none,
-            left: left != null
-                ? const BorderSide(color: Colors.white, width: 3)
-                : BorderSide.none,
-            right: right != null
-                ? const BorderSide(color: Colors.white, width: 3)
-                : BorderSide.none,
-          ),
-        ),
-      ),
     );
   }
 }
